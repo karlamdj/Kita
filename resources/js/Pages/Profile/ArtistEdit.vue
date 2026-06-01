@@ -108,12 +108,83 @@ const onPhotoChange = (e) => {
 const submit = () => {
     form.post('/dashboard/tpv/editar', {
         preserveScroll: true,
+        onSuccess: () => {
+            showSuccessModal.value = true;
+        }
     });
 };
 
-// QR Modal state
+// Modals state
+const showSuccessModal = ref(false);
 const showQrModal = ref(false);
 const isDownloading = ref(false);
+
+// Reactive theme for preview card
+const qrTheme = computed(() => {
+    switch (form.theme) {
+        case 'cyber-purple': return {
+            modalShadow: 'shadow-[0_0_80px_rgba(168,85,247,0.3)]',
+            glowTop: 'bg-purple-600/20',
+            glowBottom: 'bg-pink-600/15',
+            line: 'from-purple-500 via-pink-500 to-purple-600',
+            avatarBorder: 'border-purple-500/30',
+            avatarShadow: 'shadow-[0_0_25px_rgba(168,85,247,0.35)]',
+            textMain: 'text-purple-400',
+            badge: 'from-purple-500 to-pink-500',
+            qrShadow: 'shadow-[0_0_30px_rgba(168,85,247,0.25)]',
+            signature: 'text-purple-500/40',
+            signatureBold: 'text-purple-400/60',
+            btnSave: 'bg-purple-500 hover:bg-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.2)]',
+            btnTrigger: 'from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)]'
+        };
+        case 'volt-orange': return {
+            modalShadow: 'shadow-[0_0_80px_rgba(249,115,22,0.3)]',
+            glowTop: 'bg-orange-600/20',
+            glowBottom: 'bg-amber-600/15',
+            line: 'from-orange-500 via-amber-500 to-orange-600',
+            avatarBorder: 'border-orange-500/30',
+            avatarShadow: 'shadow-[0_0_25px_rgba(249,115,22,0.35)]',
+            textMain: 'text-orange-400',
+            badge: 'from-orange-500 to-amber-500',
+            qrShadow: 'shadow-[0_0_30px_rgba(249,115,22,0.25)]',
+            signature: 'text-orange-500/40',
+            signatureBold: 'text-orange-400/60',
+            btnSave: 'bg-orange-500 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)]',
+            btnTrigger: 'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)]'
+        };
+        case 'electric-red': return {
+            modalShadow: 'shadow-[0_0_80px_rgba(239,68,68,0.3)]',
+            glowTop: 'bg-red-600/20',
+            glowBottom: 'bg-orange-600/15',
+            line: 'from-red-500 via-orange-500 to-red-600',
+            avatarBorder: 'border-red-500/30',
+            avatarShadow: 'shadow-[0_0_25px_rgba(239,68,68,0.35)]',
+            textMain: 'text-red-500',
+            badge: 'from-red-600 to-orange-500',
+            qrShadow: 'shadow-[0_0_30px_rgba(239,68,68,0.25)]',
+            signature: 'text-red-500/40',
+            signatureBold: 'text-red-400/60',
+            btnSave: 'bg-red-500 hover:bg-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]',
+            btnTrigger: 'from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]'
+        };
+        case 'kita-neon':
+        default: return {
+            modalShadow: 'shadow-[0_0_80px_rgba(6,182,212,0.3)]',
+            glowTop: 'bg-cyan-600/20',
+            glowBottom: 'bg-teal-600/15',
+            line: 'from-cyan-500 via-teal-500 to-cyan-600',
+            avatarBorder: 'border-cyan-500/30',
+            avatarShadow: 'shadow-[0_0_25px_rgba(6,182,212,0.35)]',
+            textMain: 'text-cyan-400',
+            badge: 'from-cyan-500 to-teal-500',
+            qrShadow: 'shadow-[0_0_30px_rgba(6,182,212,0.25)]',
+            signature: 'text-cyan-500/40',
+            signatureBold: 'text-cyan-400/60',
+            btnSave: 'bg-cyan-500 hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]',
+            btnTrigger: 'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]'
+        };
+    }
+});
 
 // Computed public TPV URL for QR code
 const tpvPublicUrl = computed(() => {
@@ -489,7 +560,7 @@ const downloadCardPng = async () => {
                         </h3>
                         <p class="text-xs text-slate-500 mb-6">Elige la paleta de color que representa mejor tu estilo artístico. El cambio se aplicará en tu TPV pública.</p>
 
-                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
                             <!-- Tema: KITA Neón -->
                             <button
@@ -583,6 +654,36 @@ const downloadCardPng = async () => {
                                 </div>
                             </button>
 
+                            <!-- Tema: Electric Red -->
+                            <button
+                                type="button"
+                                @click="form.theme = 'electric-red'"
+                                :class="[
+                                    'relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group',
+                                    form.theme === 'electric-red'
+                                        ? 'border-red-500 bg-red-500/10 shadow-[0_0_20px_rgba(239,68,68,0.2)]'
+                                        : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/60'
+                                ]"
+                            >
+                                <div class="relative">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-500 to-orange-500 shadow-[0_0_20px_rgba(239,68,68,0.5)] group-hover:scale-110 transition-transform duration-300"></div>
+                                    <div v-if="form.theme === 'electric-red'" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center shadow-lg">
+                                        <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm font-bold" :class="form.theme === 'electric-red' ? 'text-red-500' : 'text-slate-300'">Electric Red</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Pasión &amp; Fuerza</p>
+                                </div>
+                                <div class="flex gap-1 mt-1">
+                                    <span class="w-6 h-1.5 rounded-full bg-red-500"></span>
+                                    <span class="w-4 h-1.5 rounded-full bg-red-600/60"></span>
+                                    <span class="w-3 h-1.5 rounded-full bg-orange-600/40"></span>
+                                </div>
+                            </button>
+
                         </div>
                     </div>
 
@@ -590,7 +691,7 @@ const downloadCardPng = async () => {
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3.5 rounded-2xl text-sm transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.2)] hover:scale-[1.01] flex items-center justify-center gap-1.5"
+                        :class="['text-slate-950 font-black py-3.5 rounded-2xl text-sm transition-all duration-300 hover:scale-[1.01] flex items-center justify-center gap-1.5', qrTheme.btnSave]"
                     >
                         <span v-if="form.processing" class="animate-spin h-5 w-5 border-2 border-slate-950 border-t-transparent rounded-full"></span>
                         {{ form.processing ? 'Guardando Cambios...' : 'Guardar Cambios en Mi TPV' }}
@@ -633,33 +734,33 @@ const downloadCardPng = async () => {
                         </button>
 
                         <!-- Tarjeta de presentación digital -->
-                        <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-white/10 rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(168,85,247,0.3)] relative">
+                        <div :class="['bg-gradient-to-b from-slate-900 to-slate-950 border border-white/10 rounded-3xl overflow-hidden relative transition-all duration-500', qrTheme.modalShadow]">
 
                             <!-- Ambient glows -->
-                            <div class="absolute top-0 right-0 w-48 h-48 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
-                            <div class="absolute bottom-0 left-0 w-40 h-40 bg-pink-600/15 rounded-full blur-3xl pointer-events-none"></div>
+                            <div :class="['absolute top-0 right-0 w-48 h-48 rounded-full blur-3xl pointer-events-none transition-colors duration-500', qrTheme.glowTop]"></div>
+                            <div :class="['absolute bottom-0 left-0 w-40 h-40 rounded-full blur-3xl pointer-events-none transition-colors duration-500', qrTheme.glowBottom]"></div>
 
                             <!-- Top gradient strip -->
-                            <div class="h-1 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600"></div>
+                            <div :class="['h-1 w-full bg-gradient-to-r transition-colors duration-500', qrTheme.line]"></div>
 
                             <!-- Card body (printable area) -->
                             <div id="mini-tarjeta-qr" class="p-7 flex flex-col items-center gap-5 relative z-10">
 
                                 <!-- Profile photo / initials avatar -->
                                 <div class="relative">
-                                    <div class="w-20 h-20 rounded-2xl overflow-hidden border-2 border-purple-500/30 shadow-[0_0_25px_rgba(168,85,247,0.35)] shrink-0 bg-slate-900 flex items-center justify-center">
+                                    <div :class="['w-20 h-20 rounded-2xl overflow-hidden border-2 shrink-0 bg-slate-900 flex items-center justify-center transition-all duration-500', qrTheme.avatarBorder, qrTheme.avatarShadow]">
                                         <img
                                             v-if="photoPreviewUrl"
                                             :src="photoPreviewUrl"
                                             alt="Foto de Perfil"
                                             class="w-full h-full object-cover"
                                         />
-                                        <span v-else class="text-purple-400 font-black text-2xl uppercase">
+                                        <span v-else :class="['font-black text-2xl uppercase transition-colors duration-500', qrTheme.textMain]">
                                             {{ getInitials(form.name || 'KI') }}
                                         </span>
                                     </div>
                                     <!-- KITA badge -->
-                                    <span class="absolute -bottom-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase tracking-wider">KITA</span>
+                                    <span :class="['absolute -bottom-2 -right-2 bg-gradient-to-r text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase tracking-wider transition-colors duration-500', qrTheme.badge]">KITA</span>
                                 </div>
 
                                 <!-- Name & instruments -->
@@ -667,7 +768,7 @@ const downloadCardPng = async () => {
                                     <h2 class="text-white font-black text-xl tracking-wide leading-tight">
                                         {{ form.name || 'Tu Nombre Artístico' }}
                                     </h2>
-                                    <p class="text-purple-400 text-xs font-semibold mt-1 tracking-wider">
+                                    <p :class="['text-xs font-semibold mt-1 tracking-wider transition-colors duration-500', qrTheme.textMain]">
                                         {{ form.instruments.length > 0 ? form.instruments.join(' · ') : 'Artista Musical' }}
                                     </p>
                                     <p v-if="form.coverage_area.length > 0" class="text-slate-500 text-[10px] mt-0.5">
@@ -687,7 +788,7 @@ const downloadCardPng = async () => {
 
                                 <!-- QR Code block -->
                                 <div class="flex flex-col items-center gap-3">
-                                    <div class="bg-white p-3 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.25)]">
+                                    <div :class="['bg-white p-3 rounded-2xl transition-all duration-500', qrTheme.qrShadow]">
                                         <QrcodeVue
                                             :value="tpvPublicUrl"
                                             :size="160"
@@ -701,8 +802,8 @@ const downloadCardPng = async () => {
                                 </div>
 
                                 <!-- ★ Brand signature — last element inside printable area ★ -->
-                                <p class="text-[9px] font-light text-purple-500/40 tracking-[0.3em] uppercase text-center mt-1 select-none">
-                                    Powered by <span class="font-semibold text-purple-400/60">KITA</span>
+                                <p :class="['text-[9px] font-light tracking-[0.3em] uppercase text-center mt-1 select-none transition-colors duration-500', qrTheme.signature]">
+                                    Powered by <span :class="['font-semibold', qrTheme.signatureBold]">KITA</span>
                                 </p>
 
                             </div><!-- /#mini-tarjeta-qr ends here — PNG boundary -->
@@ -751,6 +852,31 @@ const downloadCardPng = async () => {
                             <!-- Bottom gradient strip -->
                             <div class="h-0.5 w-full bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
                         </div>
+                    </div>
+                </div>
+            </Transition>
+
+            <!-- ====== Success Modal ====== -->
+            <Transition
+                enter-active-class="transition ease-out duration-300"
+                enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enter-to-class="opacity-100 translate-y-0 sm:scale-100"
+                leave-active-class="transition ease-in duration-200"
+                leave-from-class="opacity-100 translate-y-0 sm:scale-100"
+                leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+                <div v-if="showSuccessModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div class="bg-slate-900 border border-emerald-500/30 p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl relative">
+                        <div class="text-5xl mb-4">✅</div>
+                        <h2 class="text-xl font-bold text-white mb-2">¡Configuración Guardada!</h2>
+                        <p class="text-sm text-slate-400 mb-6">Tus cambios se han reflejado correctamente en tu Tarjeta de Presentación Virtual.</p>
+                        
+                        <button
+                            @click="showSuccessModal = false"
+                            class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                        >
+                            Entendido
+                        </button>
                     </div>
                 </div>
             </Transition>

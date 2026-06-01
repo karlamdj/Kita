@@ -120,7 +120,7 @@ class ProfileController extends Controller
             'widget_status' => 'nullable|array',
             'slug' => 'required|string|max:255|unique:profiles,slug,' . $profile->id,
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
-            'theme' => 'nullable|string|in:kita-neon,cyber-purple,volt-orange',
+            'theme' => 'nullable|string|in:kita-neon,cyber-purple,volt-orange,electric-red',
         ]);
 
         $data = [
