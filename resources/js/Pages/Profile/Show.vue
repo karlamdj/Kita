@@ -10,6 +10,99 @@ const props = defineProps({
     },
 });
 
+// ─── Theme System ─────────────────────────────────────────────────────────────
+// Each theme exposes a complete set of class strings for every accent element.
+// Using full class strings (not dynamic concatenation) keeps Tailwind's purge safe.
+const THEMES = {
+    'kita-neon': {
+        // Hero elements
+        instrument_bg:    'bg-pink-500/10 text-pink-300 border border-pink-500/20',
+        zone_bg:          'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20',
+        name_gradient:    'from-cyan-400 to-cyan-200',
+        // WhatsApp CTA button
+        cta_btn:          'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]',
+        // Social icons
+        social_icon:      'hover:border-cyan-500/30 hover:bg-cyan-500/5',
+        // Section titles
+        section_accent:   'bg-cyan-500',
+        section_title:    'text-cyan-400',
+        // Widget card borders
+        widget_card:      'border-cyan-500/10 hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]',
+        // Events date badge
+        event_badge:      'from-cyan-600 to-cyan-800',
+        // "Adquirir Accesos" CTA
+        event_cta:        'hover:border-cyan-500/50 hover:bg-cyan-950/20 text-cyan-400',
+        // Vinyl / player
+        vinyl:            'from-cyan-600 to-cyan-800',
+        vinyl_center:     'from-cyan-500 to-cyan-300',
+        play_btn:         'from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.45)]',
+        progress_bar:     'from-cyan-500 to-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]',
+        spotify_link:     'text-cyan-400 hover:text-cyan-300',
+        // Gallery play circle
+        play_circle:      'from-cyan-500 to-cyan-400',
+        // Lightbox border
+        lightbox_border:  'border-cyan-500/20 shadow-[0_0_50px_rgba(6,182,212,0.35)]',
+        // Ambient glows (kept original purple/pink for depth)
+        glow_a:           'bg-purple-900/10',
+        glow_b:           'bg-pink-900/10',
+        stage_a:          'bg-purple-600/10',
+        stage_b:          'bg-pink-600/10',
+        hero_aura:        'from-cyan-600/20 to-cyan-500/10',
+    },
+    'cyber-purple': {
+        instrument_bg:    'bg-pink-500/10 text-pink-300 border border-pink-500/20',
+        zone_bg:          'bg-purple-500/10 text-purple-300 border border-purple-500/20',
+        name_gradient:    'from-purple-400 to-pink-400',
+        cta_btn:          'from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(236,72,153,0.6)]',
+        social_icon:      'hover:border-purple-500/30 hover:bg-purple-500/5',
+        section_accent:   'bg-purple-500',
+        section_title:    'text-purple-400',
+        widget_card:      'border-purple-500/10 hover:border-purple-500/30 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]',
+        event_badge:      'from-purple-600 to-pink-600',
+        event_cta:        'hover:border-purple-500/50 hover:bg-purple-950/20 text-purple-400',
+        vinyl:            'from-purple-600 to-pink-600',
+        vinyl_center:     'from-purple-500 to-pink-500',
+        play_btn:         'from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 shadow-[0_0_20px_rgba(168,85,247,0.45)]',
+        progress_bar:     'from-purple-500 to-pink-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]',
+        spotify_link:     'text-pink-400 hover:text-pink-300',
+        play_circle:      'from-purple-500 to-pink-500',
+        lightbox_border:  'border-purple-500/20 shadow-[0_0_50px_rgba(168,85,247,0.35)]',
+        glow_a:           'bg-purple-900/10',
+        glow_b:           'bg-pink-900/10',
+        stage_a:          'bg-purple-600/10',
+        stage_b:          'bg-pink-600/10',
+        hero_aura:        'from-purple-600/30 to-pink-500/20',
+    },
+    'volt-orange': {
+        instrument_bg:    'bg-orange-500/10 text-orange-300 border border-orange-500/20',
+        zone_bg:          'bg-amber-500/10 text-amber-300 border border-amber-500/20',
+        name_gradient:    'from-orange-400 to-amber-300',
+        cta_btn:          'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(251,191,36,0.6)]',
+        social_icon:      'hover:border-orange-500/30 hover:bg-orange-500/5',
+        section_accent:   'bg-orange-500',
+        section_title:    'text-orange-400',
+        widget_card:      'border-orange-500/10 hover:border-orange-500/30 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)]',
+        event_badge:      'from-orange-600 to-amber-600',
+        event_cta:        'hover:border-orange-500/50 hover:bg-orange-950/20 text-orange-400',
+        vinyl:            'from-orange-600 to-amber-600',
+        vinyl_center:     'from-orange-500 to-amber-400',
+        play_btn:         'from-orange-500 to-amber-400 hover:from-orange-400 hover:to-amber-300 shadow-[0_0_20px_rgba(249,115,22,0.45)]',
+        progress_bar:     'from-orange-500 to-amber-400 shadow-[0_0_10px_rgba(249,115,22,0.8)]',
+        spotify_link:     'text-orange-400 hover:text-orange-300',
+        play_circle:      'from-orange-500 to-amber-400',
+        lightbox_border:  'border-orange-500/20 shadow-[0_0_50px_rgba(249,115,22,0.35)]',
+        glow_a:           'bg-orange-900/10',
+        glow_b:           'bg-amber-900/10',
+        stage_a:          'bg-orange-600/10',
+        stage_b:          'bg-amber-600/10',
+        hero_aura:        'from-orange-600/30 to-amber-500/20',
+    },
+};
+
+// Active theme classes — falls back to kita-neon if unknown value
+const tc = computed(() => THEMES[props.profile.theme] ?? THEMES['kita-neon']);
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Helper to get initials
 const getInitials = (name) => {
     return name
@@ -164,13 +257,13 @@ const toggleMusicPlay = () => {
             </button>
         </div>
 
-        <!-- Ambient Decorative Glowing Blobs (Electric Purple & Pink Aesthetics) -->
-        <div class="absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] rounded-full bg-purple-900/10 blur-[130px] pointer-events-none z-0"></div>
-        <div class="absolute bottom-[10%] right-[-10%] w-[70vw] h-[70vw] rounded-full bg-pink-900/10 blur-[140px] pointer-events-none z-0"></div>
+        <!-- Ambient Decorative Glowing Blobs (theme-driven) -->
+        <div :class="['absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] rounded-full blur-[130px] pointer-events-none z-0', tc.glow_a]"></div>
+        <div :class="['absolute bottom-[10%] right-[-10%] w-[70vw] h-[70vw] rounded-full blur-[140px] pointer-events-none z-0', tc.glow_b]"></div>
 
-        <!-- Stage Lights / Floating stage lights neon (depth & tridimensionality) -->
-        <div class="absolute top-10 right-10 w-[450px] h-[450px] bg-purple-600/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
-        <div class="absolute bottom-20 left-10 w-[500px] h-[500px] bg-pink-600/10 rounded-full blur-[140px] pointer-events-none z-0"></div>
+        <!-- Stage Lights (theme-driven) -->
+        <div :class="['absolute top-10 right-10 w-[450px] h-[450px] rounded-full blur-[140px] pointer-events-none z-0', tc.stage_a]"></div>
+        <div :class="['absolute bottom-20 left-10 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none z-0', tc.stage_b]"></div>
 
         <!-- Mobile Profile Photo Hero (Visible only on Mobile) -->
         <div v-if="mainPhoto" class="lg:hidden w-full h-[55vh] relative overflow-hidden z-0">
@@ -197,7 +290,7 @@ const toggleMusicPlay = () => {
                         <span
                             v-for="inst in profile.instruments"
                             :key="inst"
-                            class="px-3 py-1 rounded-md bg-pink-500/10 text-pink-300 border border-pink-500/20 text-xs font-bold uppercase tracking-wider shadow-sm"
+                            :class="['px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm', tc.instrument_bg]"
                         >
                             {{ inst }}
                         </span>
@@ -206,14 +299,14 @@ const toggleMusicPlay = () => {
                             <span
                                 v-for="zone in profile.coverage_area"
                                 :key="zone"
-                                class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-semibold shadow-sm"
+                                :class="['px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
                             >
                                 📍 {{ zone }}
                             </span>
                         </template>
                         <span
                             v-else-if="profile.coverage_area"
-                            class="px-3 py-1 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20 text-xs font-semibold shadow-sm"
+                            :class="['px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
                         >
                             📍 {{ profile.coverage_area }}
                         </span>
@@ -224,7 +317,7 @@ const toggleMusicPlay = () => {
                         <h1 class="text-white font-black text-6xl sm:text-7xl lg:text-8xl tracking-wider uppercase leading-none">
                             {{ nameParts.first }}
                         </h1>
-                        <span v-if="nameParts.rest" class="bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text text-6xl sm:text-7xl lg:text-8xl font-black uppercase leading-none mt-2">
+                        <span v-if="nameParts.rest" :class="['bg-gradient-to-r text-transparent bg-clip-text text-6xl sm:text-7xl lg:text-8xl font-black uppercase leading-none mt-2', tc.name_gradient]">
                             {{ nameParts.rest }}
                         </span>
                     </div>
@@ -240,7 +333,7 @@ const toggleMusicPlay = () => {
                         <a
                             :href="getWhatsAppUrl()"
                             target="_blank"
-                            class="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold py-4 px-8 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-300 shadow-[0_0_20px_rgba(219,39,119,0.4)] hover:shadow-[0_0_30px_rgba(236,72,153,0.6)] hover:scale-[1.03] cursor-pointer text-sm tracking-wider uppercase"
+                            :class="['w-full sm:w-auto bg-gradient-to-r text-white font-extrabold py-4 px-8 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-300 hover:scale-[1.03] cursor-pointer text-sm tracking-wider uppercase', tc.cta_btn]"
                         >
                             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 2.001 14.156.98 11.602.98c-5.439 0-9.867 4.37-9.871 9.803-.001 1.73.461 3.42 1.336 4.908l-.994 3.633 3.734-.972zm12.355-6.852c-.3-.15-1.77-.875-2.046-.975-.276-.1-.477-.15-.677.15-.2.3-.777.975-.951 1.174-.174.2-.35.225-.65.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.487-1.777-1.663-2.074-.176-.3-.019-.461.13-.611.135-.135.3-.35.45-.525.15-.175.2-.3.3-.5s.05-.375-.025-.525-.675-1.625-.925-2.225c-.244-.589-.491-.51-.677-.52l-.576-.007c-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5s1.075 2.9 1.225 3.1c.15.2 2.11 3.224 5.112 4.525.714.309 1.272.494 1.707.632.715.227 1.365.195 1.88.117.574-.088 1.77-.725 2.02-.1425.25-.7.25-1.3.175-1.425-.076-.125-.276-.2-.576-.35z"/>
@@ -255,7 +348,7 @@ const toggleMusicPlay = () => {
                                 v-if="profile.widget_status?.instagram"
                                 :href="profile.widget_status.instagram"
                                 target="_blank"
-                                class="text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 hover:border-purple-500/30 rounded-xl bg-slate-900/20 hover:bg-purple-500/5"
+                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="Instagram"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -268,7 +361,7 @@ const toggleMusicPlay = () => {
                                 v-if="profile.widget_status?.spotify"
                                 :href="profile.widget_status.spotify"
                                 target="_blank"
-                                class="text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 hover:border-purple-500/30 rounded-xl bg-slate-900/20 hover:bg-purple-500/5"
+                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="Spotify"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -281,7 +374,7 @@ const toggleMusicPlay = () => {
                                 v-if="profile.widget_status?.facebook"
                                 :href="profile.widget_status.facebook"
                                 target="_blank"
-                                class="text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 hover:border-purple-500/30 rounded-xl bg-slate-900/20 hover:bg-purple-500/5"
+                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="Facebook"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -294,7 +387,7 @@ const toggleMusicPlay = () => {
                                 v-if="profile.widget_status?.youtube"
                                 :href="profile.widget_status.youtube"
                                 target="_blank"
-                                class="text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 hover:border-purple-500/30 rounded-xl bg-slate-900/20 hover:bg-purple-500/5"
+                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="YouTube"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -340,17 +433,17 @@ const toggleMusicPlay = () => {
             <!-- 2. WIDGETS SECTION (Deep-blue space glass bento cards below the Hero) -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mt-4">
                 
-                <!-- WIDGETS LEFT: Music & Gallery Widgets (Spans 7 columns on Desktop) -->
+                <!-- WIDGETS LEFT: Music widget (top) + Gallery widget (below) — col-span-7 -->
                 <div class="grid grid-cols-1 gap-8 lg:col-span-7">
                     
                     <!-- MUSIC WIDGET (Deep space glassmorphism) -->
                     <section
                         v-if="profile.widget_status?.spotify"
-                        class="bg-[#0d1527]/40 backdrop-blur-md border border-purple-500/10 rounded-3xl p-6 shadow-xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]"
+                        :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 shadow-xl relative overflow-hidden group transition-all duration-300 border', tc.widget_card]"
                     >
                         <div class="flex items-center gap-3 mb-6">
-                            <span class="w-8 h-0.5 bg-purple-500 rounded-full"></span>
-                            <h3 class="text-xs font-black tracking-widest text-purple-400 uppercase">
+                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
                                 Música Destacada
                             </h3>
                         </div>
@@ -361,10 +454,10 @@ const toggleMusicPlay = () => {
                             <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/5 via-transparent to-transparent opacity-0 group-hover/player:opacity-100 transition-opacity duration-500"></div>
 
                             <!-- Vinyl artwork -->
-                            <div class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-600 shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center shrink-0 relative overflow-hidden group-hover/player:scale-105 transition-all duration-500 select-none">
+                            <div :class="['w-24 h-24 rounded-2xl bg-gradient-to-tr shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center shrink-0 relative overflow-hidden group-hover/player:scale-105 transition-all duration-500 select-none', tc.vinyl]">
                                 <div class="absolute inset-2 rounded-full border border-white/20 flex items-center justify-center bg-slate-950/95 animate-[spin_10s_linear_infinite]" :class="{ 'paused': !isMusicPlaying }">
                                     <!-- Center Vinyl label -->
-                                    <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-[8px] font-black text-slate-950">
+                                    <div :class="['w-6 h-6 rounded-full bg-gradient-to-tr flex items-center justify-center text-[8px] font-black text-slate-950', tc.vinyl_center]">
                                         {{ getInitials(profile.name) }}
                                     </div>
                                 </div>
@@ -381,8 +474,7 @@ const toggleMusicPlay = () => {
                                 <div class="mt-4">
                                     <div class="w-full h-1 bg-slate-900 border border-slate-800 rounded-full overflow-hidden relative">
                                         <div 
-                                            class="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.8)]"
-                                            :class="isMusicPlaying ? 'w-[45%] transition-all duration-[8000ms] ease-out' : 'w-[12%] transition-all duration-500'"
+                                            :class="['h-full bg-gradient-to-r rounded-full', tc.progress_bar, isMusicPlaying ? 'w-[45%] transition-all duration-[8000ms] ease-out' : 'w-[12%] transition-all duration-500']"
                                         ></div>
                                     </div>
                                     <div class="flex justify-between text-[10px] text-slate-500 font-bold mt-1.5">
@@ -395,7 +487,7 @@ const toggleMusicPlay = () => {
                             <!-- Circular Glowing Play Button -->
                             <button
                                 @click="toggleMusicPlay"
-                                class="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 text-slate-950 shadow-[0_0_20px_rgba(168,85,247,0.45)] flex items-center justify-center shrink-0 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none group/btn"
+                                :class="['w-14 h-14 rounded-full bg-gradient-to-r text-slate-950 flex items-center justify-center shrink-0 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none group/btn', tc.play_btn]"
                             >
                                 <svg v-if="!isMusicPlaying" class="h-6 w-6 fill-slate-950 translate-x-0.5 group-hover/btn:scale-105 transition-transform" viewBox="0 0 24 24">
                                     <path d="M8 5v14l11-7z"/>
@@ -411,7 +503,7 @@ const toggleMusicPlay = () => {
                             <a
                                 :href="profile.widget_status.spotify"
                                 target="_blank"
-                                class="text-xs font-bold text-pink-400 hover:text-pink-300 flex items-center gap-1.5 transition-colors"
+                                :class="['text-xs font-bold flex items-center gap-1.5 transition-colors', tc.spotify_link]"
                             >
                                 <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 0C5.373 0 0 5.372 0 12s5.373 12 12 12 12-5.372 12-12S18.627 0 12 0zm5.49 17.3c-.22.36-.685.478-1.045.258-2.868-1.752-6.48-2.15-10.732-1.176-.41.096-.82-.163-.918-.574-.097-.41.162-.82.573-.917 4.653-1.064 8.628-.606 11.865 1.373.36.22.477.685.257 1.045zm1.464-3.262c-.277.45-.86.598-1.31.32-3.284-2.02-8.293-2.607-12.177-1.428-.506.153-1.04-.136-1.194-.643-.154-.506.136-1.04.643-1.194 4.432-1.345 9.947-.694 13.718 1.63.45.276.598.86.32 1.31zm.126-3.414C15.114 8.27 8.57 8.053 4.78 9.203c-.59.18-1.21-.15-1.39-.74-.18-.59.15-1.21.74-1.39 4.35-1.32 11.56-1.07 16.1 1.62.53.31.7.99.39 1.52-.31.53-.99.7-1.52.39z"/>
@@ -421,16 +513,14 @@ const toggleMusicPlay = () => {
                         </div>
                     </section>
 
-                    <!-- GALLERY WIDGET (Deep space glassmorphism) -->
+                    <!-- GALLERY WIDGET — below Music in left column -->
                     <section
                         v-if="profile.widget_status?.media !== false && allMedia.length > 0"
-                        class="bg-[#0d1527]/40 backdrop-blur-md border border-purple-500/10 rounded-3xl p-6 shadow-xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]"
+                        :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 shadow-xl relative overflow-hidden group transition-all duration-300 border', tc.widget_card]"
                     >
                         <div class="flex items-center gap-3 mb-6">
-                            <span class="w-8 h-0.5 bg-purple-500 rounded-full"></span>
-                            <h3 class="text-xs font-black tracking-widest text-purple-400 uppercase">
-                                Galería & Videos
-                            </h3>
+                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">Galería &amp; Videos</h3>
                         </div>
 
                         <!-- Infinite Dynamic Responsive Grid -->
@@ -454,7 +544,7 @@ const toggleMusicPlay = () => {
                                         </div>
                                         <!-- Play icon overlay -->
                                         <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/15 transition-colors flex items-center justify-center">
-                                            <div class="w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-slate-950 shadow-[0_0_15px_rgba(168,85,247,0.5)] group-hover:scale-115 transition-all duration-300">
+                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 shadow-[0_0_15px_rgba(168,85,247,0.5)] group-hover:scale-115 transition-all duration-300', tc.play_circle]">
                                                 <svg class="h-4.5 w-4.5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24">
                                                     <path d="M8 5v14l11-7z"/>
                                                 </svg>
@@ -478,7 +568,7 @@ const toggleMusicPlay = () => {
                                         ></video>
                                         <!-- Play icon overlay -->
                                         <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/15 transition-colors flex items-center justify-center">
-                                            <div class="w-9 h-9 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-slate-950 shadow-[0_0_15px_rgba(168,85,247,0.5)] group-hover:scale-115 transition-all duration-300">
+                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 shadow-[0_0_15px_rgba(168,85,247,0.5)] group-hover:scale-115 transition-all duration-300', tc.play_circle]">
                                                 <svg class="h-4.5 w-4.5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24">
                                                     <path d="M8 5v14l11-7z"/>
                                                 </svg>
@@ -509,17 +599,17 @@ const toggleMusicPlay = () => {
                     </section>
                 </div>
 
-                <!-- WIDGETS RIGHT: Shows/Events Widget (Spans 5 columns on Desktop) -->
+                <!-- WIDGETS RIGHT: Próximas Presentaciones — col-span-5, to the RIGHT of Music -->
                 <div class="grid grid-cols-1 gap-8 lg:col-span-5">
                     
                     <!-- SHOWS WIDGET (Deep space glassmorphism) -->
                     <section
                         v-if="profile.widget_status?.agenda !== false && upcomingEvents.length > 0"
-                        class="bg-[#0d1527]/40 backdrop-blur-md border border-purple-500/10 rounded-3xl p-6 shadow-xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]"
+                        :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 shadow-xl relative overflow-hidden group transition-all duration-300 border', tc.widget_card]"
                     >
                         <div class="flex items-center gap-3 mb-6">
-                            <span class="w-8 h-0.5 bg-purple-500 rounded-full"></span>
-                            <h3 class="text-xs font-black tracking-widest text-purple-400 uppercase">
+                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
                                 Próximas Presentaciones
                             </h3>
                         </div>
@@ -532,7 +622,7 @@ const toggleMusicPlay = () => {
                                 class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-950/80 border border-slate-850 p-4 rounded-2xl overflow-hidden group/gig hover:border-purple-500/30 transition-all duration-300"
                             >
                                 <!-- Date Badge (Concert ticket notch feel) -->
-                                <div class="bg-gradient-to-br from-purple-600 to-pink-600 text-white w-14 py-3 rounded-2xl shrink-0 flex flex-col items-center justify-center font-black leading-none text-center shadow-lg relative">
+                                <div :class="['bg-gradient-to-br text-white w-14 py-3 rounded-2xl shrink-0 flex flex-col items-center justify-center font-black leading-none text-center shadow-lg relative', tc.event_badge]">
                                     <!-- Ticket notches -->
                                     <div class="absolute top-1/2 -left-1.5 w-3 h-3 bg-slate-950 border-r border-slate-850 rounded-full shrink-0"></div>
                                     <div class="absolute top-1/2 -right-1.5 w-3 h-3 bg-slate-950 border-l border-slate-850 rounded-full shrink-0"></div>
@@ -573,7 +663,7 @@ const toggleMusicPlay = () => {
                                     <a
                                         :href="getWhatsAppUrl()"
                                         target="_blank"
-                                        class="bg-slate-900 border border-slate-800 hover:border-purple-500/50 hover:bg-purple-950/20 text-purple-400 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer shadow-md select-none w-full sm:w-auto text-center"
+                                        :class="['bg-slate-900 border border-slate-800 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer shadow-md select-none w-full sm:w-auto text-center', tc.event_cta]"
                                     >
                                         Adquirir Accesos
                                     </a>

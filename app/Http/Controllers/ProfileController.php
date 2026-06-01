@@ -120,6 +120,7 @@ class ProfileController extends Controller
             'widget_status' => 'nullable|array',
             'slug' => 'required|string|max:255|unique:profiles,slug,' . $profile->id,
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'theme' => 'nullable|string|in:kita-neon,cyber-purple,volt-orange',
         ]);
 
         $data = [
@@ -129,6 +130,7 @@ class ProfileController extends Controller
             'instruments' => $request->input('instruments') ?? [],
             'widget_status' => $request->input('widget_status') ?? [],
             'slug' => Str::slug($request->input('slug')),
+            'theme' => $request->input('theme', 'kita-neon'),
         ];
 
         if ($request->hasFile('profile_photo')) {

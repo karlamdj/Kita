@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import QrcodeVue from 'qrcode.vue';
+import html2canvas from 'html2canvas';
 
 const props = defineProps({
     profile: {
@@ -46,6 +48,7 @@ const form = useForm({
         facebook: props.profile.widget_status?.facebook || '',
         youtube: props.profile.widget_status?.youtube || '',
     },
+    theme: props.profile.theme || 'kita-neon',
 });
 
 // Toggle instrument selection
@@ -106,6 +109,54 @@ const submit = () => {
     form.post('/dashboard/tpv/editar', {
         preserveScroll: true,
     });
+};
+
+// QR Modal state
+const showQrModal = ref(false);
+const isDownloading = ref(false);
+
+// Computed public TPV URL for QR code
+const tpvPublicUrl = computed(() => {
+    if (props.profile.slug) {
+        return window.location.origin + '/' + props.profile.slug;
+    }
+    return window.location.origin;
+});
+
+// Format phone for display (keeps only digits then formats)
+const displayPhone = computed(() => {
+    const raw = form.widget_status.whatsapp || '';
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return null;
+    // Show as +52 322 123 4567 style if length is 12 (Mexico)
+    if (digits.length === 12) {
+        return `+${digits.slice(0, 2)} ${digits.slice(2, 5)} ${digits.slice(5, 8)} ${digits.slice(8)}`;
+    }
+    return `+${digits}`;
+});
+
+// Download card as PNG using html2canvas
+const downloadCardPng = async () => {
+    isDownloading.value = true;
+    await nextTick();
+    try {
+        const el = document.getElementById('mini-tarjeta-qr');
+        if (!el) return;
+        const canvas = await html2canvas(el, {
+            backgroundColor: '#0f172a',
+            useCORS: true,
+            scale: 2,
+            logging: false,
+        });
+        const link = document.createElement('a');
+        link.download = `mi-tarjeta-kita-${form.slug || 'artista'}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    } catch (e) {
+        console.error('Error generando PNG:', e);
+    } finally {
+        isDownloading.value = false;
+    }
 };
 </script>
 
@@ -250,18 +301,25 @@ const submit = () => {
                                 <span v-if="form.errors.coverage_area" class="text-xs text-red-400 mt-1 block">{{ form.errors.coverage_area }}</span>
                             </div>
 
-                            <!-- View Live Link CTA -->
+                            <!-- QR / Tarjeta Digital CTA -->
                             <div class="md:col-span-2 flex justify-end pb-1.5" v-if="props.profile.slug">
-                                <a
-                                    :href="'/' + form.slug"
-                                    target="_blank"
-                                    class="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 transition-colors duration-200"
+                                <button
+                                    type="button"
+                                    @click="showQrModal = true"
+                                    class="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-transparent border-none p-0 group"
                                 >
-                                    <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    <!-- QR code SVG icon -->
+                                    <svg class="h-4 w-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="3" width="7" height="7" rx="1"/>
+                                        <rect x="14" y="3" width="7" height="7" rx="1"/>
+                                        <rect x="3" y="14" width="7" height="7" rx="1"/>
+                                        <rect x="5" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
+                                        <rect x="16" y="5" width="3" height="3" fill="currentColor" stroke="none"/>
+                                        <rect x="5" y="16" width="3" height="3" fill="currentColor" stroke="none"/>
+                                        <path d="M14 14h2v2h-2zM18 14h3v3h-3zM14 18h3v3h-3zM19 21h2"/>
                                     </svg>
-                                    Ver Mi TPV Pública en Vivo
-                                </a>
+                                    Ver Mi QR / Tarjeta
+                                </button>
                             </div>
                         </div>
 
@@ -421,6 +479,113 @@ const submit = () => {
                         </div>
                     </div>
 
+                    <!-- 5. Color Theme Picker -->
+                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+                        <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
+                            <svg class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                            </svg>
+                            Personaliza el Color de tu TPV
+                        </h3>
+                        <p class="text-xs text-slate-500 mb-6">Elige la paleta de color que representa mejor tu estilo artístico. El cambio se aplicará en tu TPV pública.</p>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+                            <!-- Tema: KITA Neón -->
+                            <button
+                                type="button"
+                                @click="form.theme = 'kita-neon'"
+                                :class="[
+                                    'relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group',
+                                    form.theme === 'kita-neon'
+                                        ? 'border-cyan-400 bg-cyan-500/10 shadow-[0_0_20px_rgba(34,211,238,0.2)]'
+                                        : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/60'
+                                ]"
+                            >
+                                <!-- Color swatch -->
+                                <div class="relative">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-300 to-cyan-600 shadow-[0_0_20px_rgba(34,211,238,0.5)] group-hover:scale-110 transition-transform duration-300"></div>
+                                    <div v-if="form.theme === 'kita-neon'" class="absolute -top-1 -right-1 w-5 h-5 bg-cyan-400 rounded-full flex items-center justify-center shadow-lg">
+                                        <svg class="h-3 w-3 text-slate-950" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm font-bold" :class="form.theme === 'kita-neon' ? 'text-cyan-300' : 'text-slate-300'">KITA Neón</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Predeterminado</p>
+                                </div>
+                                <!-- Mini preview strip -->
+                                <div class="flex gap-1 mt-1">
+                                    <span class="w-6 h-1.5 rounded-full bg-cyan-400"></span>
+                                    <span class="w-4 h-1.5 rounded-full bg-cyan-600/60"></span>
+                                    <span class="w-3 h-1.5 rounded-full bg-cyan-800/40"></span>
+                                </div>
+                            </button>
+
+                            <!-- Tema: Cyber Púrpura -->
+                            <button
+                                type="button"
+                                @click="form.theme = 'cyber-purple'"
+                                :class="[
+                                    'relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group',
+                                    form.theme === 'cyber-purple'
+                                        ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_20px_rgba(168,85,247,0.2)]'
+                                        : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/60'
+                                ]"
+                            >
+                                <div class="relative">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-700 shadow-[0_0_20px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-transform duration-300"></div>
+                                    <div v-if="form.theme === 'cyber-purple'" class="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                                        <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm font-bold" :class="form.theme === 'cyber-purple' ? 'text-purple-300' : 'text-slate-300'">Cyber Púrpura</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Elegante &amp; Místico</p>
+                                </div>
+                                <div class="flex gap-1 mt-1">
+                                    <span class="w-6 h-1.5 rounded-full bg-purple-500"></span>
+                                    <span class="w-4 h-1.5 rounded-full bg-purple-700/60"></span>
+                                    <span class="w-3 h-1.5 rounded-full bg-purple-900/40"></span>
+                                </div>
+                            </button>
+
+                            <!-- Tema: Volt Naranja -->
+                            <button
+                                type="button"
+                                @click="form.theme = 'volt-orange'"
+                                :class="[
+                                    'relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group',
+                                    form.theme === 'volt-orange'
+                                        ? 'border-orange-500 bg-orange-500/10 shadow-[0_0_20px_rgba(249,115,22,0.2)]'
+                                        : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/60'
+                                ]"
+                            >
+                                <div class="relative">
+                                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-300 to-orange-600 shadow-[0_0_20px_rgba(249,115,22,0.5)] group-hover:scale-110 transition-transform duration-300"></div>
+                                    <div v-if="form.theme === 'volt-orange'" class="absolute -top-1 -right-1 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                                        <svg class="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="text-center">
+                                    <p class="text-sm font-bold" :class="form.theme === 'volt-orange' ? 'text-orange-300' : 'text-slate-300'">Volt Naranja</p>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Energía &amp; Fuego</p>
+                                </div>
+                                <div class="flex gap-1 mt-1">
+                                    <span class="w-6 h-1.5 rounded-full bg-orange-500"></span>
+                                    <span class="w-4 h-1.5 rounded-full bg-orange-700/60"></span>
+                                    <span class="w-3 h-1.5 rounded-full bg-orange-900/40"></span>
+                                </div>
+                            </button>
+
+                        </div>
+                    </div>
+
                     <!-- Submit Button -->
                     <button
                         type="submit"
@@ -435,5 +600,161 @@ const submit = () => {
 
             </div>
         </div>
+
+        <!-- ====== QR / Digital Business Card Modal ====== -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition-all duration-300 ease-out"
+                enter-from-class="opacity-0 scale-95"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition-all duration-200 ease-in"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-95"
+            >
+                <div
+                    v-if="showQrModal"
+                    class="fixed inset-0 z-[200] flex items-center justify-center p-4"
+                >
+                    <!-- Backdrop -->
+                    <div
+                        class="absolute inset-0 bg-black/80 backdrop-blur-sm"
+                        @click="showQrModal = false"
+                    ></div>
+
+                    <!-- Modal Card -->
+                    <div class="relative z-10 w-full max-w-sm">
+                        <!-- Close button -->
+                        <button
+                            type="button"
+                            @click="showQrModal = false"
+                            class="absolute -top-4 -right-4 z-20 w-9 h-9 rounded-full bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-all cursor-pointer shadow-xl text-lg font-bold"
+                        >
+                            ✕
+                        </button>
+
+                        <!-- Tarjeta de presentación digital -->
+                        <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-white/10 rounded-3xl overflow-hidden shadow-[0_0_80px_rgba(168,85,247,0.3)] relative">
+
+                            <!-- Ambient glows -->
+                            <div class="absolute top-0 right-0 w-48 h-48 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                            <div class="absolute bottom-0 left-0 w-40 h-40 bg-pink-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                            <!-- Top gradient strip -->
+                            <div class="h-1 w-full bg-gradient-to-r from-purple-500 via-pink-500 to-purple-600"></div>
+
+                            <!-- Card body (printable area) -->
+                            <div id="mini-tarjeta-qr" class="p-7 flex flex-col items-center gap-5 relative z-10">
+
+                                <!-- Profile photo / initials avatar -->
+                                <div class="relative">
+                                    <div class="w-20 h-20 rounded-2xl overflow-hidden border-2 border-purple-500/30 shadow-[0_0_25px_rgba(168,85,247,0.35)] shrink-0 bg-slate-900 flex items-center justify-center">
+                                        <img
+                                            v-if="photoPreviewUrl"
+                                            :src="photoPreviewUrl"
+                                            alt="Foto de Perfil"
+                                            class="w-full h-full object-cover"
+                                        />
+                                        <span v-else class="text-purple-400 font-black text-2xl uppercase">
+                                            {{ getInitials(form.name || 'KI') }}
+                                        </span>
+                                    </div>
+                                    <!-- KITA badge -->
+                                    <span class="absolute -bottom-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-lg uppercase tracking-wider">KITA</span>
+                                </div>
+
+                                <!-- Name & instruments -->
+                                <div class="text-center">
+                                    <h2 class="text-white font-black text-xl tracking-wide leading-tight">
+                                        {{ form.name || 'Tu Nombre Artístico' }}
+                                    </h2>
+                                    <p class="text-purple-400 text-xs font-semibold mt-1 tracking-wider">
+                                        {{ form.instruments.length > 0 ? form.instruments.join(' · ') : 'Artista Musical' }}
+                                    </p>
+                                    <p v-if="form.coverage_area.length > 0" class="text-slate-500 text-[10px] mt-0.5">
+                                        📍 {{ form.coverage_area.slice(0, 2).join(', ') }}
+                                    </p>
+                                    <!-- Phone number -->
+                                    <div v-if="displayPhone" class="flex items-center justify-center gap-1.5 mt-1.5">
+                                        <svg class="h-3 w-3 text-green-400/70 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 2.001 14.156.98 11.602.98c-5.439 0-9.867 4.37-9.871 9.803-.001 1.73.461 3.42 1.336 4.908l-.994 3.633 3.734-.972zm12.355-6.852c-.3-.15-1.77-.875-2.046-.975-.276-.1-.477-.15-.677.15-.2.3-.777.975-.951 1.174-.174.2-.35.225-.65.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.487-1.777-1.663-2.074-.176-.3-.019-.461.13-.611.135-.135.3-.35.45-.525.15-.175.2-.3.3-.5s.05-.375-.025-.525-.675-1.625-.925-2.225c-.244-.589-.491-.51-.677-.52l-.576-.007c-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5s1.075 2.9 1.225 3.1c.15.2 2.11 3.224 5.112 4.525.714.309 1.272.494 1.707.632.715.227 1.365.195 1.88.117.574-.088 1.77-.725 2.02-1.425.25-.7.25-1.3.175-1.425-.076-.125-.276-.2-.576-.35z"/>
+                                        </svg>
+                                        <span class="text-slate-400 text-[10px] font-mono tracking-wide">{{ displayPhone }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Divider line -->
+                                <div class="w-full h-px bg-white/5"></div>
+
+                                <!-- QR Code block -->
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="bg-white p-3 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.25)]">
+                                        <QrcodeVue
+                                            :value="tpvPublicUrl"
+                                            :size="160"
+                                            level="M"
+                                            render-as="canvas"
+                                        />
+                                    </div>
+                                    <p class="text-slate-500 text-[10px] font-semibold tracking-wider text-center">
+                                        Escanea para ver mi TPV completa
+                                    </p>
+                                </div>
+
+                                <!-- ★ Brand signature — last element inside printable area ★ -->
+                                <p class="text-[9px] font-light text-purple-500/40 tracking-[0.3em] uppercase text-center mt-1 select-none">
+                                    Powered by <span class="font-semibold text-purple-400/60">KITA</span>
+                                </p>
+
+                            </div><!-- /#mini-tarjeta-qr ends here — PNG boundary -->
+
+                            <!-- URL chip — visible in modal but excluded from PNG capture -->
+                            <div class="px-7 pb-3 -mt-1">
+                                <div class="w-full bg-slate-950/60 border border-slate-800/60 rounded-xl px-3 py-2 flex items-center gap-2">
+                                    <svg class="h-3 w-3 text-cyan-400/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                    </svg>
+                                    <span class="text-cyan-400/70 text-[10px] font-mono truncate select-all">{{ tpvPublicUrl }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Action buttons row (outside printable area) -->
+                            <div class="w-full flex gap-2 px-7 pb-7 pt-2">
+                                <a
+                                    :href="tpvPublicUrl"
+                                    target="_blank"
+                                    class="flex-1 text-center py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-purple-500/40 text-slate-300 hover:text-white text-xs font-bold transition-all duration-200"
+                                >
+                                    🔗 Ver TPV
+                                </a>
+                                <!-- Download PNG button -->
+                                <button
+                                    type="button"
+                                    @click="downloadCardPng"
+                                    :disabled="isDownloading"
+                                    class="flex-1 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-cyan-500/50 hover:bg-cyan-500/10 text-cyan-400 hover:text-cyan-300 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                >
+                                    <svg v-if="!isDownloading" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    <span v-if="isDownloading" class="w-3.5 h-3.5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin shrink-0"></span>
+                                    {{ isDownloading ? 'Generando...' : 'Guardar PNG' }}
+                                </button>
+                                <button
+                                    type="button"
+                                    @click="showQrModal = false"
+                                    class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-black transition-all duration-200 shadow-[0_0_15px_rgba(168,85,247,0.3)] cursor-pointer"
+                                >
+                                    ✓ Cerrar
+                                </button>
+                            </div>
+
+                            <!-- Bottom gradient strip -->
+                            <div class="h-0.5 w-full bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
     </AuthenticatedLayout>
 </template>
