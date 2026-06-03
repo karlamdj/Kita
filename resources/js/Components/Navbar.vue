@@ -9,14 +9,16 @@ const authUser = computed(() => page.props.auth?.user);
 <template>
     <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50 px-4 sm:px-6 lg:px-8 w-full">
         <div class="max-w-7xl mx-auto flex items-center justify-between h-16">
-            <!-- Left Side: Logo & Subtitle linking to Home -->
-            <Link href="/" class="flex items-center gap-2 group cursor-pointer select-none">
-                <span class="text-2xl font-extrabold tracking-wider bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
-                    KITA
-                </span>
-                <span class="hidden sm:inline-block text-xs font-semibold tracking-wider text-slate-400 uppercase border-l border-slate-700 pl-2">
-                    Tu Manager Virtual
-                </span>
+            <Link href="/" class="flex items-center gap-3 group cursor-pointer select-none">
+                <img src="/images/navbar.svg" alt="KITA Logo" class="h-10 w-auto" />
+                <div class="flex items-baseline gap-2">
+                    <span class="text-2xl font-black tracking-wider text-white">
+                        KITA
+                    </span>
+                    <span class="hidden sm:inline-block text-[9px] font-bold tracking-[0.3em] text-slate-500 uppercase border-l border-slate-800 pl-2">
+                        TU MANAGER VIRTUAL
+                    </span>
+                </div>
             </Link>
 
             <!-- Right Side: Dynamic Navigation Actions based on Auth -->
