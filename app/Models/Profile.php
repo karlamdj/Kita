@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'bio',
     'profile_photo_path',
     'widget_status',
+    'theme',
 ])]
 class Profile extends Model
 {

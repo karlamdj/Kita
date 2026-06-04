@@ -47,7 +47,12 @@ const THEMES = {
         glow_b:           'bg-pink-900/10',
         stage_a:          'bg-purple-600/10',
         stage_b:          'bg-pink-600/10',
-        hero_aura:        'from-cyan-600/20 to-cyan-500/10',
+        hero_aura:        'from-cyan-500/50 to-blue-600/30',
+        // Custom theme additions
+        edit_btn:         'text-cyan-400 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]',
+        play_circle_shadow: 'shadow-[0_0_15px_rgba(6,182,212,0.5)]',
+        placeholder_avatar: 'from-cyan-500 to-blue-500 shadow-[0_0_35px_rgba(6,182,212,0.5)]',
+        vinyl_shadow:     'shadow-[0_0_20px_rgba(6,182,212,0.4)]',
     },
     'cyber-purple': {
         instrument_bg:    'bg-pink-500/10 text-pink-300 border border-pink-500/20',
@@ -72,6 +77,10 @@ const THEMES = {
         stage_a:          'bg-purple-600/10',
         stage_b:          'bg-pink-600/10',
         hero_aura:        'from-purple-600/30 to-pink-500/20',
+        edit_btn:         'text-purple-400 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]',
+        play_circle_shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.5)]',
+        placeholder_avatar: 'from-purple-500 to-pink-500 shadow-[0_0_35px_rgba(168,85,247,0.5)]',
+        vinyl_shadow:     'shadow-[0_0_20px_rgba(168,85,247,0.4)]',
     },
     'volt-orange': {
         instrument_bg:    'bg-orange-500/10 text-orange-300 border border-orange-500/20',
@@ -96,6 +105,10 @@ const THEMES = {
         stage_a:          'bg-orange-600/10',
         stage_b:          'bg-amber-600/10',
         hero_aura:        'from-orange-600/30 to-amber-500/20',
+        edit_btn:         'text-orange-400 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]',
+        play_circle_shadow: 'shadow-[0_0_15px_rgba(249,115,22,0.5)]',
+        placeholder_avatar: 'from-orange-500 to-amber-500 shadow-[0_0_35px_rgba(249,115,22,0.5)]',
+        vinyl_shadow:     'shadow-[0_0_20px_rgba(249,115,22,0.4)]',
     },
     'electric-red': {
         instrument_bg:    'bg-red-500/10 text-red-300 border border-red-500/20',
@@ -120,6 +133,10 @@ const THEMES = {
         stage_a:          'bg-red-600/10',
         stage_b:          'bg-orange-600/10',
         hero_aura:        'from-red-600/30 to-orange-500/20',
+        edit_btn:         'text-red-400 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(220,38,38,0.3)]',
+        play_circle_shadow: 'shadow-[0_0_15px_rgba(239,68,68,0.5)]',
+        placeholder_avatar: 'from-red-500 to-orange-500 shadow-[0_0_35px_rgba(239,68,68,0.5)]',
+        vinyl_shadow:     'shadow-[0_0_20px_rgba(239,68,68,0.4)]',
     },
 };
 
@@ -275,7 +292,7 @@ const toggleMusicPlay = () => {
         <div v-if="isOwner" class="absolute top-20 right-4 z-40 sm:right-6 lg:right-8">
             <button
                 @click="goToEdit"
-                class="bg-slate-900/90 hover:bg-slate-800 text-purple-400 border border-slate-800 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)] px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center"
+                :class="['bg-slate-900/90 hover:bg-slate-800 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center', tc.edit_btn]"
             >
                 <span>✏️</span> Editar Perfil
             </button>
@@ -426,10 +443,10 @@ const toggleMusicPlay = () => {
                 <div class="hidden lg:block lg:col-span-5 relative w-full h-[70vh] lg:h-[80vh] select-none flex items-center justify-center">
                     
                     <!-- Neon Concert backstage lighting aura -->
-                    <div class="absolute -inset-12 bg-gradient-to-tr from-purple-600/30 to-pink-500/20 blur-[130px] pointer-events-none z-0"></div>
+                    <div :class="['absolute -inset-12 bg-gradient-to-tr blur-[130px] pointer-events-none z-0', tc.hero_aura]"></div>
 
                     <!-- Frameless image container with mask gradient -->
-                    <div class="relative z-10 w-full h-full rounded-[36px] overflow-hidden">
+                    <div :class="['relative z-10 w-full h-full rounded-[36px] overflow-hidden bg-[#0d1527]/40 backdrop-blur-md border transition-all duration-300', tc.widget_card]">
                         <template v-if="mainPhoto">
                             <img
                                 :src="mainPhoto"
@@ -442,12 +459,12 @@ const toggleMusicPlay = () => {
                         </template>
                         
                         <!-- Placeholder cover if profile has no photos -->
-                        <div v-else class="w-full h-full bg-gradient-to-br from-slate-900 via-purple-950/30 to-pink-950/20 flex flex-col items-center justify-center p-8 text-center rounded-[36px]">
-                            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 flex items-center justify-center text-slate-950 font-black text-4xl shadow-[0_0_35px_rgba(168,85,247,0.5)] mb-4">
+                        <div v-else class="w-full h-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-8 text-center rounded-[36px]">
+                            <div :class="['w-24 h-24 rounded-full bg-gradient-to-tr flex items-center justify-center text-slate-950 font-black text-4xl mb-4', tc.placeholder_avatar]">
                                 {{ getInitials(profile.name) }}
                             </div>
                             <h3 class="text-2xl font-black text-white uppercase tracking-wider">{{ profile.name }}</h3>
-                            <p class="text-xs text-purple-400 font-semibold mt-1">Tarjeta de Presentación Virtual</p>
+                            <p :class="['text-xs font-semibold mt-1', tc.section_title]">Tarjeta de Presentación Virtual</p>
                         </div>
                     </div>
                 </div>
@@ -478,7 +495,7 @@ const toggleMusicPlay = () => {
                             <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/5 via-transparent to-transparent opacity-0 group-hover/player:opacity-100 transition-opacity duration-500"></div>
 
                             <!-- Vinyl artwork -->
-                            <div :class="['w-24 h-24 rounded-2xl bg-gradient-to-tr shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center shrink-0 relative overflow-hidden group-hover/player:scale-105 transition-all duration-500 select-none', tc.vinyl]">
+                            <div :class="['w-24 h-24 rounded-2xl bg-gradient-to-tr flex items-center justify-center shrink-0 relative overflow-hidden group-hover/player:scale-105 transition-all duration-500 select-none', tc.vinyl, tc.vinyl_shadow]">
                                 <div class="absolute inset-2 rounded-full border border-white/20 flex items-center justify-center bg-slate-950/95 animate-[spin_10s_linear_infinite]" :class="{ 'paused': !isMusicPlaying }">
                                     <!-- Center Vinyl label -->
                                     <div :class="['w-6 h-6 rounded-full bg-gradient-to-tr flex items-center justify-center text-[8px] font-black text-slate-950', tc.vinyl_center]">
@@ -568,7 +585,7 @@ const toggleMusicPlay = () => {
                                         </div>
                                         <!-- Play icon overlay -->
                                         <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/15 transition-colors flex items-center justify-center">
-                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 shadow-[0_0_15px_rgba(168,85,247,0.5)] group-hover:scale-115 transition-all duration-300', tc.play_circle]">
+                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 group-hover:scale-115 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
                                                 <svg class="h-4.5 w-4.5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24">
                                                     <path d="M8 5v14l11-7z"/>
                                                 </svg>
@@ -592,7 +609,7 @@ const toggleMusicPlay = () => {
                                         ></video>
                                         <!-- Play icon overlay -->
                                         <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/15 transition-colors flex items-center justify-center">
-                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 shadow-[0_0_15px_rgba(168,85,247,0.5)] group-hover:scale-115 transition-all duration-300', tc.play_circle]">
+                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 group-hover:scale-115 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
                                                 <svg class="h-4.5 w-4.5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24">
                                                     <path d="M8 5v14l11-7z"/>
                                                 </svg>
@@ -715,7 +732,7 @@ const toggleMusicPlay = () => {
                 <iframe
                     v-if="activeLightboxItem.type === 'youtube' || activeLightboxItem.type === 'vimeo'"
                     :src="getVideoEmbedUrl(activeLightboxItem)"
-                    class="w-full aspect-video rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.35)] border border-purple-500/20 max-w-4xl max-h-[75vh]"
+                    :class="['w-full aspect-video rounded-2xl max-w-4xl max-h-[75vh] border', tc.lightbox_border]"
                     frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
@@ -725,7 +742,7 @@ const toggleMusicPlay = () => {
                 <video
                     v-else-if="activeLightboxItem.type === 'video' && activeLightboxItem.path"
                     :src="'/' + activeLightboxItem.path"
-                    class="max-w-full max-h-[80vh] rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.3)] border border-purple-500/20"
+                    :class="['max-w-full max-h-[80vh] rounded-2xl border', tc.lightbox_border]"
                     controls
                     autoplay
                 ></video>
@@ -735,7 +752,7 @@ const toggleMusicPlay = () => {
                     v-else-if="activeLightboxItem.type === 'photo'"
                     :src="'/' + activeLightboxItem.path"
                     :alt="activeLightboxItem.title"
-                    class="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-[0_0_50px_rgba(168,85,247,0.2)] border border-white/10"
+                    :class="['max-w-full max-h-[80vh] object-contain rounded-2xl border', tc.lightbox_border]"
                 />
             </div>
         </div>

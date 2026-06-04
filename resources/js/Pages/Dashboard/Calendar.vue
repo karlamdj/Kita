@@ -129,7 +129,7 @@ const getTypeColor = (type) => {
         case 'disponible':
             return {
                 bg: 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300',
-                pill: 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.4)]',
+                pill: 'bg-cyan-500 shadow-cyan-glow-sm',
             };
         default:
             return {
@@ -215,7 +215,7 @@ const formatEventTime = (dateString) => {
                                     'aspect-square border rounded-xl p-1.5 flex flex-col justify-between transition-all duration-200 select-none relative',
                                     day.day ? 'cursor-pointer' : 'opacity-0 pointer-events-none',
                                     selectedDate === day.dateString
-                                        ? 'bg-slate-950 border-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.15)] scale-[1.02]'
+                                        ? 'bg-slate-950 border-cyan-500 shadow-cyan-glow-15 scale-[1.02]'
                                         : 'bg-slate-950/40 border-slate-850/60 hover:border-slate-750'
                                 ]"
                             >
@@ -244,7 +244,7 @@ const formatEventTime = (dateString) => {
                         <!-- Color Legends/Glossary -->
                         <div class="flex flex-wrap gap-4 mt-6 border-t border-slate-800/80 pt-4 text-xs font-semibold text-slate-400">
                             <div class="flex items-center gap-1.5">
-                                <span class="h-2.5 w-2.5 rounded-full bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]"></span>
+                                <span class="h-2.5 w-2.5 rounded-full bg-cyan-500 shadow-cyan-glow-sm-50"></span>
                                 Disponible / Abierto
                             </div>
                             <div class="flex items-center gap-1.5">
@@ -350,7 +350,7 @@ const formatEventTime = (dateString) => {
                                 <button
                                     type="submit"
                                     :disabled="form.processing"
-                                    class="bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-cyan-400 text-slate-950 font-black py-2.5 rounded-lg text-sm transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:scale-[1.01] flex items-center justify-center gap-1.5 mt-2"
+                                    class="bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-cyan-400 text-slate-950 font-black py-2.5 rounded-lg text-sm transition-all duration-300 shadow-cyan-glow-20 hover:scale-[1.01] flex items-center justify-center gap-1.5 mt-2"
                                 >
                                     <span v-if="form.processing" class="animate-spin h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full"></span>
                                     Guardar Fecha

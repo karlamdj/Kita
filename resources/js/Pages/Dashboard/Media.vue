@@ -213,7 +213,7 @@ const getVideoEmbedUrl = (item) => {
                             <button
                                 type="submit"
                                 :disabled="!photoForm.file || photoForm.processing"
-                                class="bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:scale-[1.01] flex items-center justify-center gap-1.5"
+                                class="bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition-all duration-300 shadow-cyan-glow-20 hover:scale-[1.01] flex items-center justify-center gap-1.5"
                             >
                                 <span v-if="photoForm.processing" class="animate-spin h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full"></span>
                                 {{ photoForm.processing ? 'Subiendo...' : 'Subir Archivo' }}
@@ -260,7 +260,7 @@ const getVideoEmbedUrl = (item) => {
                                 <button
                                     type="submit"
                                     :disabled="!videoForm.url || videoForm.processing"
-                                    class="bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:scale-[1.01] flex items-center justify-center gap-1.5 mt-2"
+                                    class="bg-cyan-500 disabled:bg-slate-800 disabled:text-slate-500 hover:bg-cyan-400 text-slate-950 font-bold py-2.5 rounded-lg text-sm transition-all duration-300 shadow-cyan-glow-20 hover:scale-[1.01] flex items-center justify-center gap-1.5 mt-2"
                                 >
                                     <span v-if="videoForm.processing" class="animate-spin h-4 w-4 border-2 border-slate-950 border-t-transparent rounded-full"></span>
                                     Guardar Enlace de Video

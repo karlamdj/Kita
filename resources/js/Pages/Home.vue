@@ -220,7 +220,7 @@ const sortedMusicians = computed(() => {
             <!-- 2. Hero Header Section -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
                 <!-- Hero Left Info -->
-                <div class="lg:col-span-7 flex flex-col items-start text-left">
+                <div class="lg:col-span-6 flex flex-col items-start text-left">
                     <!-- Cyan Badge -->
                     <span class="text-xs font-black tracking-[0.4em] text-cyan-400 mb-4 uppercase">
                         • CONECTA • COLABORA • CRECE •
@@ -278,9 +278,9 @@ const sortedMusicians = computed(() => {
                 </div>
 
                 <!-- Hero Right: Large Glowing Logo Graphic -->
-                <div class="lg:col-span-5 relative w-full h-[320px] lg:h-[450px] flex items-center justify-center">
+                <div class="lg:col-span-6 relative w-full h-[320px] lg:h-[520px] flex items-center justify-center">
                     <div class="absolute -inset-10 bg-cyan-500/10 rounded-full blur-[100px] pointer-events-none"></div>
-                    <div class="relative z-10 w-full max-w-[400px] h-full flex items-center justify-center">
+                    <div class="relative z-10 w-full max-w-[500px] h-full flex items-center justify-center">
                         <img src="/images/logo.svg" alt="KITA Logo" class="w-full h-auto drop-shadow-[0_0_35px_rgba(6,182,212,0.15)]" />
                     </div>
                 </div>

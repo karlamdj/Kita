@@ -1,9 +1,22 @@
 <script setup>
+import { ref, computed, provide } from 'vue';
+import { usePage } from '@inertiajs/vue3';
 import Navbar from '@/Components/Navbar.vue';
+
+const page = usePage();
+const dbTheme = computed(() => page.props.auth?.profile_theme || 'kita-neon');
+const themeOverride = ref(null);
+
+const currentTheme = computed(() => themeOverride.value || dbTheme.value);
+const profileThemeClass = computed(() => 'theme-' + currentTheme.value);
+
+provide('setThemeOverride', (theme) => {
+    themeOverride.value = theme;
+});
 </script>
 
 <template>
-    <div class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative">
+    <div :class="[profileThemeClass, 'bg-slate-950 text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative']">
         
         <!-- Reusable Global Navbar -->
         <Navbar />

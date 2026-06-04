@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, nextTick } from 'vue';
+import { ref, computed, nextTick, inject, watch, onUnmounted } from 'vue';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import QrcodeVue from 'qrcode.vue';
@@ -49,6 +49,20 @@ const form = useForm({
         youtube: props.profile.widget_status?.youtube || '',
     },
     theme: props.profile.theme || 'kita-neon',
+});
+
+// Live preview theme override
+const setThemeOverride = inject('setThemeOverride', null);
+watch(() => form.theme, (newTheme) => {
+    if (setThemeOverride) {
+        setThemeOverride(newTheme);
+    }
+}, { immediate: true });
+
+onUnmounted(() => {
+    if (setThemeOverride) {
+        setThemeOverride(null);
+    }
 });
 
 // Toggle instrument selection
@@ -135,7 +149,15 @@ const qrTheme = computed(() => {
             signature: 'text-purple-500/40',
             signatureBold: 'text-purple-400/60',
             btnSave: 'bg-purple-500 hover:bg-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.2)]',
-            btnTrigger: 'from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)]'
+            btnTrigger: 'from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:shadow-[0_0_30px_rgba(236,72,153,0.5)]',
+            focusRing: 'focus:border-purple-500 focus:ring-purple-950/40',
+            tagStyle: 'bg-purple-500/10 text-purple-400 border-purple-500/30 hover:bg-purple-500/20',
+            tagClose: 'text-purple-400/60 hover:text-purple-400 hover:bg-purple-500/20',
+            activePill: 'bg-purple-500 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.3)]',
+            toggleSwitch: 'peer-checked:bg-purple-500 peer-checked:after:border-purple-400',
+            secondaryBtn: 'hover:border-purple-500/40 text-purple-400 hover:text-purple-300 hover:bg-purple-500/5',
+            spinnerBorder: 'border-purple-400',
+            uploadBtn: 'hover:border-purple-500/40 text-purple-400 hover:text-purple-300'
         };
         case 'volt-orange': return {
             modalShadow: 'shadow-[0_0_80px_rgba(249,115,22,0.3)]',
@@ -150,7 +172,15 @@ const qrTheme = computed(() => {
             signature: 'text-orange-500/40',
             signatureBold: 'text-orange-400/60',
             btnSave: 'bg-orange-500 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)]',
-            btnTrigger: 'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)]'
+            btnTrigger: 'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_0_20px_rgba(249,115,22,0.3)] hover:shadow-[0_0_30px_rgba(249,115,22,0.5)]',
+            focusRing: 'focus:border-orange-500 focus:ring-orange-950/40',
+            tagStyle: 'bg-orange-500/10 text-orange-400 border-orange-500/30 hover:bg-orange-500/20',
+            tagClose: 'text-orange-400/60 hover:text-orange-400 hover:bg-orange-500/20',
+            activePill: 'bg-orange-500 text-slate-950 border-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3)]',
+            toggleSwitch: 'peer-checked:bg-orange-500 peer-checked:after:border-orange-400',
+            secondaryBtn: 'hover:border-orange-500/40 text-orange-400 hover:text-orange-300 hover:bg-orange-500/5',
+            spinnerBorder: 'border-orange-400',
+            uploadBtn: 'hover:border-orange-500/40 text-orange-400 hover:text-orange-300'
         };
         case 'electric-red': return {
             modalShadow: 'shadow-[0_0_80px_rgba(239,68,68,0.3)]',
@@ -165,7 +195,15 @@ const qrTheme = computed(() => {
             signature: 'text-red-500/40',
             signatureBold: 'text-red-400/60',
             btnSave: 'bg-red-500 hover:bg-red-400 shadow-[0_0_20px_rgba(239,68,68,0.2)]',
-            btnTrigger: 'from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]'
+            btnTrigger: 'from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 shadow-[0_0_20px_rgba(239,68,68,0.3)] hover:shadow-[0_0_30px_rgba(239,68,68,0.5)]',
+            focusRing: 'focus:border-red-500 focus:ring-red-950/40',
+            tagStyle: 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20',
+            tagClose: 'text-red-400/60 hover:text-red-400 hover:bg-red-500/20',
+            activePill: 'bg-red-500 text-white border-red-400 shadow-[0_0_15px_rgba(239,68,68,0.3)]',
+            toggleSwitch: 'peer-checked:bg-red-500 peer-checked:after:border-red-400',
+            secondaryBtn: 'hover:border-red-500/40 text-red-400 hover:text-red-300 hover:bg-red-500/5',
+            spinnerBorder: 'border-red-400',
+            uploadBtn: 'hover:border-red-500/40 text-red-400 hover:text-red-300'
         };
         case 'kita-neon':
         default: return {
@@ -181,7 +219,15 @@ const qrTheme = computed(() => {
             signature: 'text-cyan-500/40',
             signatureBold: 'text-cyan-400/60',
             btnSave: 'bg-cyan-500 hover:bg-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.2)]',
-            btnTrigger: 'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]'
+            btnTrigger: 'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:shadow-[0_0_30px_rgba(6,182,212,0.5)]',
+            focusRing: 'focus:border-cyan-500 focus:ring-cyan-950/40',
+            tagStyle: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/20',
+            tagClose: 'text-cyan-400/60 hover:text-cyan-400 hover:bg-cyan-500/20',
+            activePill: 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]',
+            toggleSwitch: 'peer-checked:bg-cyan-500 peer-checked:after:border-cyan-400',
+            secondaryBtn: 'hover:border-cyan-500/40 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/5',
+            spinnerBorder: 'border-cyan-400',
+            uploadBtn: 'hover:border-cyan-500/40 text-cyan-400 hover:text-cyan-300'
         };
     }
 });
@@ -248,8 +294,8 @@ const downloadCardPng = async () => {
             <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 
                 <!-- Success Notification -->
-                <div v-if="$page.props.flash?.success" class="mb-6 p-4 bg-emerald-950/40 border border-emerald-800/40 text-emerald-400 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg">
-                    <svg class="h-5 w-5 text-emerald-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div v-if="$page.props.flash?.success" :class="['mb-6 p-4 bg-slate-900/60 border rounded-xl text-sm font-semibold flex items-center gap-2 shadow-lg', qrTheme.avatarBorder, qrTheme.textMain]">
+                    <svg :class="['h-5 w-5 shrink-0', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     {{ $page.props.flash.success }}
@@ -260,7 +306,7 @@ const downloadCardPng = async () => {
                     <!-- 1. Basic Info Section -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
-                            <svg class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             Información Básica
@@ -269,14 +315,14 @@ const downloadCardPng = async () => {
                         <!-- Profile Photo Upload Block -->
                         <div class="flex flex-col sm:flex-row items-center gap-6 mb-8 border-b border-slate-800/60 pb-6">
                             <!-- Image Preview Circle -->
-                            <div class="relative w-28 h-28 rounded-2xl overflow-hidden border-2 border-purple-500/20 bg-slate-950 flex items-center justify-center shrink-0 shadow-[0_0_20px_rgba(168,85,247,0.15)] group">
+                            <div :class="['relative w-28 h-28 rounded-2xl overflow-hidden border-2 bg-slate-950 flex items-center justify-center shrink-0 group transition-all duration-500', qrTheme.avatarBorder, qrTheme.avatarShadow]">
                                 <img
                                     v-if="photoPreviewUrl"
                                     :src="photoPreviewUrl"
                                     alt="Profile Preview"
                                     class="w-full h-full object-cover animate-fade-in"
                                 />
-                                <div v-else class="text-purple-400 font-black text-2xl uppercase">
+                                <div v-else :class="['font-black text-2xl uppercase transition-colors duration-500', qrTheme.textMain]">
                                     {{ getInitials(form.name) }}
                                 </div>
                             </div>
@@ -286,7 +332,7 @@ const downloadCardPng = async () => {
                                 <h4 class="text-sm font-bold text-white mb-1">Foto de Perfil Principal</h4>
                                 <p class="text-xs text-slate-500 mb-3">Esta foto será la que se muestre en tamaño grande en la columna derecha de tu TPV pública.</p>
                                 
-                                <label class="inline-flex items-center gap-2 bg-slate-950 border border-slate-800 hover:border-purple-500/40 text-purple-400 hover:text-purple-300 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-md select-none">
+                                <label :class="['inline-flex items-center gap-2 bg-slate-950 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer shadow-md select-none', qrTheme.uploadBtn]">
                                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
@@ -311,7 +357,7 @@ const downloadCardPng = async () => {
                                     type="text"
                                     required
                                     placeholder="Ej: Sunset Groove, Carlos Ramírez..."
-                                    class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                    :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                 />
                                 <span v-if="form.errors.name" class="text-xs text-red-400 mt-1 block">{{ form.errors.name }}</span>
                             </div>
@@ -329,7 +375,7 @@ const downloadCardPng = async () => {
                                         required
                                         @input="onSlugInput"
                                         placeholder="juan-perez-guitarrista"
-                                        class="w-full bg-slate-950 border border-slate-850 rounded-r-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                        :class="['w-full bg-slate-950 border border-slate-850 rounded-r-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                     />
                                 </div>
                                 <span v-if="form.errors.slug" class="text-xs text-red-400 mt-1 block">{{ form.errors.slug }}</span>
@@ -347,7 +393,7 @@ const downloadCardPng = async () => {
                                         @keydown.comma.prevent="addZoneTag"
                                         @blur="addZoneTag"
                                         placeholder="Escribe una zona (ej: Puerto Vallarta, Jalisco) y presiona Enter o coma..."
-                                        class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                        :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                     />
                                     
                                     <!-- Rendered tags -->
@@ -356,13 +402,13 @@ const downloadCardPng = async () => {
                                         <span
                                             v-for="zone in form.coverage_area"
                                             :key="zone"
-                                            class="inline-flex items-center gap-1.5 bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-3 py-1 rounded-full text-xs font-semibold select-none shadow-sm hover:bg-cyan-500/20 transition-all"
+                                            :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold select-none shadow-sm border transition-all duration-300', qrTheme.tagStyle]"
                                         >
                                             {{ zone }}
                                             <button
                                                 type="button"
                                                 @click="removeZoneTag(zone)"
-                                                class="text-cyan-400/60 hover:text-cyan-400 focus:outline-none text-xs font-black p-0.5 rounded-full hover:bg-cyan-500/20 shrink-0 cursor-pointer"
+                                                :class="['focus:outline-none text-xs font-black p-0.5 rounded-full shrink-0 cursor-pointer transition-colors duration-300', qrTheme.tagClose]"
                                             >
                                                 &times;
                                             </button>
@@ -377,7 +423,7 @@ const downloadCardPng = async () => {
                                 <button
                                     type="button"
                                     @click="showQrModal = true"
-                                    class="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-transparent border-none p-0 group"
+                                    :class="['text-xs font-bold flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-transparent border-none p-0 group', qrTheme.textMain]"
                                 >
                                     <!-- QR code SVG icon -->
                                     <svg class="h-4 w-4 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -401,7 +447,7 @@ const downloadCardPng = async () => {
                                 v-model="form.bio"
                                 rows="4"
                                 placeholder="Escribe tu trayectoria, estilos musicales y lo que ofreces en tus shows..."
-                                class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                             ></textarea>
                             <span v-if="form.errors.bio" class="text-xs text-red-400 mt-1 block">{{ form.errors.bio }}</span>
                         </div>
@@ -410,7 +456,7 @@ const downloadCardPng = async () => {
                     <!-- 2. Instruments / Categories Selection -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
-                            <svg class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                             </svg>
                             Instrumento o Tipo de Show
@@ -426,7 +472,7 @@ const downloadCardPng = async () => {
                                 :class="[
                                     'px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-300 border cursor-pointer select-none',
                                     form.instruments.includes(inst)
-                                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)] font-bold scale-[1.02]'
+                                        ? qrTheme.activePill + ' font-bold scale-[1.02]'
                                         : 'bg-slate-950 text-slate-400 border-slate-850 hover:border-slate-700 hover:text-slate-200'
                                 ]"
                             >
@@ -439,7 +485,7 @@ const downloadCardPng = async () => {
                     <!-- 3. Contact & Social Networks Section -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
-                            <svg class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg>
                             Botón de Contacto y Redes Sociales (Widgets)
@@ -453,7 +499,7 @@ const downloadCardPng = async () => {
                                     v-model="form.widget_status.whatsapp"
                                     type="text"
                                     placeholder="Ej: 523221234567"
-                                    class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                    :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                 />
                                 <p class="text-[9px] text-slate-500 mt-1">Inserta tu número con lada internacional, sin espacios ni guiones (Ej: 52 para México).</p>
                             </div>
@@ -465,7 +511,7 @@ const downloadCardPng = async () => {
                                     v-model="form.widget_status.instagram"
                                     type="url"
                                     placeholder="https://instagram.com/miusuario"
-                                    class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                    :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                 />
                             </div>
 
@@ -476,7 +522,7 @@ const downloadCardPng = async () => {
                                     v-model="form.widget_status.spotify"
                                     type="url"
                                     placeholder="https://open.spotify.com/artist/..."
-                                    class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                    :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                 />
                             </div>
 
@@ -487,7 +533,7 @@ const downloadCardPng = async () => {
                                     v-model="form.widget_status.facebook"
                                     type="url"
                                     placeholder="https://facebook.com/miusuario"
-                                    class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                    :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                 />
                             </div>
 
@@ -498,7 +544,7 @@ const downloadCardPng = async () => {
                                     v-model="form.widget_status.youtube"
                                     type="url"
                                     placeholder="https://youtube.com/@miusuario"
-                                    class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
+                                    :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                 />
                             </div>
                         </div>
@@ -507,7 +553,7 @@ const downloadCardPng = async () => {
                     <!-- 4. Widgets Visibility Toggles -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
-                            <svg class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
@@ -528,7 +574,7 @@ const downloadCardPng = async () => {
                                         type="checkbox"
                                         class="sr-only peer"
                                     />
-                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 peer-checked:after:bg-slate-950 peer-checked:after:border-cyan-400"></div>
+                                    <div :class="['w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:bg-slate-950', qrTheme.toggleSwitch]"></div>
                                 </label>
                             </div>
 
@@ -544,7 +590,7 @@ const downloadCardPng = async () => {
                                         type="checkbox"
                                         class="sr-only peer"
                                     />
-                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500 peer-checked:after:bg-slate-950 peer-checked:after:border-cyan-400"></div>
+                                    <div :class="['w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[\'\'] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:bg-slate-950', qrTheme.toggleSwitch]"></div>
                                 </label>
                             </div>
                         </div>
@@ -553,7 +599,7 @@ const downloadCardPng = async () => {
                     <!-- 5. Color Theme Picker -->
                     <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
-                            <svg class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                             </svg>
                             Personaliza el Color de tu TPV
@@ -811,10 +857,10 @@ const downloadCardPng = async () => {
                             <!-- URL chip — visible in modal but excluded from PNG capture -->
                             <div class="px-7 pb-3 -mt-1">
                                 <div class="w-full bg-slate-950/60 border border-slate-800/60 rounded-xl px-3 py-2 flex items-center gap-2">
-                                    <svg class="h-3 w-3 text-cyan-400/70 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <svg :class="['h-3 w-3 shrink-0 opacity-70 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                                     </svg>
-                                    <span class="text-cyan-400/70 text-[10px] font-mono truncate select-all">{{ tpvPublicUrl }}</span>
+                                    <span :class="['text-[10px] font-mono truncate select-all opacity-70 transition-colors duration-500', qrTheme.textMain]">{{ tpvPublicUrl }}</span>
                                 </div>
                             </div>
 
@@ -823,7 +869,7 @@ const downloadCardPng = async () => {
                                 <a
                                     :href="tpvPublicUrl"
                                     target="_blank"
-                                    class="flex-1 text-center py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-purple-500/40 text-slate-300 hover:text-white text-xs font-bold transition-all duration-200"
+                                    :class="['flex-1 text-center py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 text-xs font-bold transition-all duration-200', qrTheme.secondaryBtn]"
                                 >
                                     🔗 Ver TPV
                                 </a>
@@ -832,25 +878,25 @@ const downloadCardPng = async () => {
                                     type="button"
                                     @click="downloadCardPng"
                                     :disabled="isDownloading"
-                                    class="flex-1 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 hover:border-cyan-500/50 hover:bg-cyan-500/10 text-cyan-400 hover:text-cyan-300 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                    :class="['flex-1 py-2.5 rounded-xl bg-slate-800/60 border border-slate-700 text-xs font-bold transition-all duration-200 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed', qrTheme.secondaryBtn]"
                                 >
                                     <svg v-if="!isDownloading" class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
-                                    <span v-if="isDownloading" class="w-3.5 h-3.5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin shrink-0"></span>
+                                    <span v-if="isDownloading" :class="['w-3.5 h-3.5 border-2 border-t-transparent rounded-full animate-spin shrink-0', qrTheme.spinnerBorder]"></span>
                                     {{ isDownloading ? 'Generando...' : 'Guardar PNG' }}
                                 </button>
                                 <button
                                     type="button"
                                     @click="showQrModal = false"
-                                    class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white text-xs font-black transition-all duration-200 shadow-[0_0_15px_rgba(168,85,247,0.3)] cursor-pointer"
+                                    :class="['flex-1 py-2.5 rounded-xl text-white text-xs font-black transition-all duration-200 cursor-pointer', qrTheme.btnTrigger]"
                                 >
                                     ✓ Cerrar
                                 </button>
                             </div>
 
                             <!-- Bottom gradient strip -->
-                            <div class="h-0.5 w-full bg-gradient-to-r from-transparent via-purple-500/30 to-transparent"></div>
+                            <div :class="['h-0.5 w-full bg-gradient-to-r from-transparent to-transparent', qrTheme.line ? 'via-' + qrTheme.line.split(' ')[0].split('-')[1] + '-500/30' : 'via-cyan-500/30']"></div>
                         </div>
                     </div>
                 </div>
@@ -866,14 +912,20 @@ const downloadCardPng = async () => {
                 leave-to-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
                 <div v-if="showSuccessModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div class="bg-slate-900 border border-emerald-500/30 p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl relative">
-                        <div class="text-5xl mb-4">✅</div>
+                    <div :class="['bg-slate-900 p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl relative border', qrTheme.avatarBorder]">
+                        <div class="flex items-center justify-center mb-4">
+                            <div :class="['w-16 h-16 rounded-full flex items-center justify-center bg-slate-950 border shadow-md transition-all duration-500', qrTheme.avatarBorder]">
+                                <svg :class="['h-8 w-8 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                        </div>
                         <h2 class="text-xl font-bold text-white mb-2">¡Configuración Guardada!</h2>
                         <p class="text-sm text-slate-400 mb-6">Tus cambios se han reflejado correctamente en tu Tarjeta de Presentación Virtual.</p>
                         
                         <button
                             @click="showSuccessModal = false"
-                            class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3 rounded-xl transition-colors shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                            :class="['w-full font-black py-3 rounded-xl transition-all duration-300 hover:scale-[1.02] text-slate-950', qrTheme.btnSave]"
                         >
                             Entendido
                         </button>
