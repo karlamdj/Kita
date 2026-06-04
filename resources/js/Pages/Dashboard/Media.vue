@@ -36,12 +36,61 @@ const handleFileChange = (e) => {
     }
 };
 
+// Detect platform from URL (mirror of Show.vue)
+const detectPlatform = (url) => {
+    if (!url) return 'unknown';
+    if (/youtube\.com|youtu\.be/.test(url)) return 'youtube';
+    if (/facebook\.com|fb\.watch/.test(url)) return 'facebook';
+    if (/instagram\.com/.test(url)) return 'instagram';
+    if (/tiktok\.com/.test(url)) return 'tiktok';
+    if (/vimeo\.com/.test(url)) return 'vimeo';
+    return 'unknown';
+};
+
+const getPlatform = (item) => {
+    if (item.type === 'photo') return 'photo';
+    const urlPlatform = detectPlatform(item.url);
+    if (urlPlatform !== 'unknown') return urlPlatform;
+    if (item.type === 'youtube') return 'youtube';
+    if (item.type === 'vimeo') return 'vimeo';
+    if (item.type === 'facebook') return 'facebook';
+    if (item.type === 'instagram') return 'instagram';
+    if (item.type === 'tiktok') return 'tiktok';
+    return 'unknown';
+};
+
+const getPlatformLabel = (item) => {
+    const p = getPlatform(item);
+    const labels = {
+        photo: 'Imagen de Promoción',
+        youtube: 'YouTube',
+        vimeo: 'Vimeo',
+        facebook: 'Facebook Video',
+        instagram: 'Instagram Reel',
+        tiktok: 'TikTok Video',
+    };
+    return labels[p] || 'Enlace de Video';
+};
+
+// Parse Video ID and generate Embed URL (YouTube only — others redirect externally)
+const getVideoEmbedUrl = (item) => {
+    const url = item.url;
+    if (!url) return null;
+    const platform = getPlatform(item);
+    if (platform === 'youtube') {
+        const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const match = url.match(regExp);
+        return match && match[2].length === 11
+            ? `https://www.youtube.com/embed/${match[2]}`
+            : null;
+    }
+    return null;
+};
+
 const setPhotoFile = (file) => {
     const isImage = file.type.startsWith('image/');
-    const isVideo = file.type.startsWith('video/') || ['mp4', 'mov', 'webm'].includes(file.name.split('.').pop().toLowerCase());
-
-    if (!isImage && !isVideo) {
-        alert('Por favor selecciona un archivo de imagen o video válido (.mp4, .mov, .webm).');
+    if (!isImage) {
+        alert('Por favor selecciona un archivo de imagen válido (JPG, PNG, GIF, WEBP).');
         return;
     }
     photoForm.file = file;
@@ -100,27 +149,6 @@ const deleteMedia = (id) => {
         });
     }
 };
-
-// Parse Video ID and generate Embed URL
-const getVideoEmbedUrl = (item) => {
-    const url = item.url;
-    if (!url) return null;
-
-    if (item.type === 'youtube') {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return match && match[2].length === 11
-            ? `https://www.youtube.com/embed/${match[2]}`
-            : null;
-    } else if (item.type === 'vimeo') {
-        const regExp = /vimeo\.com\/(?:video\/)?([0-9]+)/;
-        const match = url.match(regExp);
-        return match
-            ? `https://player.vimeo.com/video/${match[1]}`
-            : null;
-    }
-    return null;
-};
 </script>
 
 <template>
@@ -132,7 +160,7 @@ const getVideoEmbedUrl = (item) => {
                 Almacén de Medios
             </h2>
             <p class="text-xs text-slate-400 mt-1">
-                Sube tus fotos promocionales y conecta tus mejores videos de YouTube o Vimeo.
+                Sube tus fotos promocionales y conecta tus videos de YouTube, Facebook, Instagram o TikTok.
             </p>
         </template>
 
@@ -149,9 +177,9 @@ const getVideoEmbedUrl = (item) => {
                                 <svg class="h-5 w-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                Cargar Fotos o Videos Locales
+                                Cargar Fotos
                             </h3>
-                            <span class="text-xs text-slate-500 font-semibold uppercase">Multimedia</span>
+                            <span class="text-xs text-slate-500 font-semibold uppercase">Imagen</span>
                         </div>
 
                         <!-- Drag and Drop Box -->
@@ -169,7 +197,7 @@ const getVideoEmbedUrl = (item) => {
                                 ref="fileInput"
                                 type="file"
                                 class="hidden"
-                                accept="image/*,video/mp4,video/quicktime,video/webm"
+                                accept="image/jpeg,image/png,image/gif,image/webp"
                                 @change="handleFileChange"
                             />
 
@@ -189,13 +217,13 @@ const getVideoEmbedUrl = (item) => {
                                 ></video>
                                 <p class="text-xs text-cyan-400 font-bold">Archivo listo para subir. Haz clic para cambiar.</p>
                             </template>
-                            <template v-else>
-                                <svg class="h-10 w-10 text-slate-600 mb-2 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
-                                <p class="text-sm text-slate-300 font-semibold mb-1">Arrastra tu archivo aquí o haz clic para buscar</p>
-                                <p class="text-xs text-slate-500">Soporta fotos y videos nativos de hasta 100MB</p>
-                            </template>
+                                 <template v-else>
+                                    <svg class="h-10 w-10 text-slate-600 mb-2 group-hover:text-slate-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    <p class="text-sm text-slate-300 font-semibold mb-1">Arrastra tu foto aquí o haz clic para buscar</p>
+                                    <p class="text-xs text-slate-500">Soporta JPG, PNG, GIF, WEBP hasta 20MB</p>
+                                </template>
                         </div>
 
                         <!-- Title and Upload Button -->
@@ -246,15 +274,15 @@ const getVideoEmbedUrl = (item) => {
                                 </div>
 
                                 <div>
-                                    <label class="text-xs font-semibold text-slate-400 block mb-1">URL de YouTube o Vimeo</label>
+                                    <label class="text-xs font-semibold text-slate-400 block mb-1">URL del Video Social</label>
                                     <input
                                         v-model="videoForm.url"
                                         type="url"
                                         required
-                                        placeholder="https://www.youtube.com/watch?v=..."
+                                        placeholder="https://www.youtube.com/watch?v=... o Facebook, Instagram, TikTok"
                                         class="w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-950"
                                     />
-                                    <p class="text-[10px] text-slate-500 mt-1">Inserta la URL directa del video de tu show para previsualizarlo de forma interactiva.</p>
+                                    <p class="text-[10px] text-slate-500 mt-1">Acepta enlaces públicos de YouTube • Facebook • Instagram • TikTok.</p>
                                 </div>
 
                                 <button
@@ -301,8 +329,9 @@ const getVideoEmbedUrl = (item) => {
                             <!-- Media Visual Content -->
                             <div class="relative bg-slate-950 aspect-video flex items-center justify-center overflow-hidden">
                                 
-                                <!-- Render YouTube/Vimeo Iframe Embed -->
-                                <template v-if="item.type === 'youtube' || item.type === 'vimeo'">
+                                <!-- Render by platform type -->
+                                <!-- YouTube: iframe embed -->
+                                <template v-if="getPlatform(item) === 'youtube'">
                                     <iframe
                                         v-if="getVideoEmbedUrl(item)"
                                         :src="getVideoEmbedUrl(item)"
@@ -315,20 +344,26 @@ const getVideoEmbedUrl = (item) => {
                                         <svg class="h-10 w-10 text-red-500/70 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M23.498 6.163a3.003 3.003 0 00-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 00-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 002.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 002.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                                         </svg>
-                                        Enlace de video guardado
+                                        Enlace de YouTube guardado
                                     </div>
                                 </template>
 
-                                <!-- Render Photo or Local Video -->
+                                <!-- Facebook / Instagram / TikTok: external link card -->
+                                <template v-else-if="getPlatform(item) === 'facebook' || getPlatform(item) === 'instagram' || getPlatform(item) === 'tiktok'">
+                                    <div class="w-full h-full flex flex-col items-center justify-center gap-2 bg-slate-950 p-4">
+                                        <!-- FB icon -->
+                                        <svg v-if="getPlatform(item) === 'facebook'" class="h-8 w-8 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                        <!-- IG icon -->
+                                        <svg v-else-if="getPlatform(item) === 'instagram'" class="h-8 w-8" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="ig-db" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig-db)"/><circle cx="12" cy="12" r="3.5" stroke="white" stroke-width="1.5" fill="none"/><circle cx="16.5" cy="7.5" r="1" fill="white"/><rect x="3" y="3" width="18" height="18" rx="5" stroke="white" stroke-width="1.5" fill="none"/></svg>
+                                        <!-- TT icon -->
+                                        <svg v-else class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" fill="#69C9D0"/><path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" fill="#EE1D52"/></svg>
+                                        <a :href="item.url" target="_blank" class="text-[10px] text-slate-400 hover:text-white font-semibold underline text-center px-2 truncate w-full">Abrir enlace</a>
+                                    </div>
+                                </template>
+
+                                <!-- Photo -->
                                 <template v-else>
-                                    <video
-                                        v-if="item.type === 'video' && item.path"
-                                        :src="'/' + item.path"
-                                        class="w-full h-full object-cover"
-                                        controls
-                                    ></video>
                                     <img
-                                        v-else
                                         :src="'/' + item.path"
                                         :alt="item.title"
                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -341,7 +376,7 @@ const getVideoEmbedUrl = (item) => {
                                 <div class="min-w-0">
                                     <h4 class="text-sm font-bold text-white truncate">{{ item.title }}</h4>
                                     <p class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">
-                                        {{ item.type === 'photo' ? 'Imagen de promoción' : (item.path ? 'Video Local' : 'Video ' + item.type) }}
+                                        {{ getPlatformLabel(item) }}
                                     </p>
                                 </div>
 

@@ -154,24 +154,126 @@ const getInitials = (name) => {
         .toUpperCase();
 };
 
-// Filter photos, videos and upcoming events
+// ─── Media Platform Detection ─────────────────────────────────────────────────
+
+// Detect platform from URL
+const detectPlatform = (url) => {
+    if (!url) return 'unknown';
+    if (/youtube\.com|youtu\.be/.test(url)) return 'youtube';
+    if (/facebook\.com|fb\.watch/.test(url)) return 'facebook';
+    if (/instagram\.com/.test(url)) return 'instagram';
+    if (/tiktok\.com/.test(url)) return 'tiktok';
+    return 'unknown';
+};
+
+// Extract YouTube video ID
+const getYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+};
+
+// Get YouTube embed URL with autoplay
+const getYouTubeEmbedUrl = (url, autoplay = false) => {
+    const id = getYouTubeId(url);
+    return id ? `https://www.youtube.com/embed/${id}${autoplay ? '?autoplay=1&rel=0' : '?rel=0'}` : null;
+};
+
+// Get YouTube thumbnail
+const getYouTubeThumbnail = (url) => {
+    const id = getYouTubeId(url);
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+};
+
+// Determine if a media item is a vertical video format (TikTok / Instagram Reels)
+const isVerticalVideo = (item) => {
+    const platform = getPlatform(item);
+    return platform === 'tiktok' || platform === 'instagram';
+};
+
+// Unified platform getter for media items (supports old type field + URL detection)
+const getPlatform = (item) => {
+    if (item.type === 'photo') return 'photo';
+    // First try URL-based detection for new items
+    const urlPlatform = detectPlatform(item.url);
+    if (urlPlatform !== 'unknown') return urlPlatform;
+    // Fallback to type field for legacy items
+    if (item.type === 'youtube') return 'youtube';
+    if (item.type === 'vimeo') return 'vimeo';
+    return 'unknown';
+};
+
+// Extract TikTok video ID from URL
+const getTikTokId = (url) => {
+    if (!url) return null;
+    // Matches https://www.tiktok.com/@user/video/1234567890
+    const match = url.match(/\/video\/(\d+)/);
+    return match ? match[1] : null;
+};
+
+// Get embed URL for any platform (lightbox use)
+const getEmbedUrl = (item, autoplay = true) => {
+    const url = item.url;
+    const platform = getPlatform(item);
+    switch (platform) {
+        case 'youtube':
+            return getYouTubeEmbedUrl(url, autoplay);
+        case 'tiktok': {
+            // Official TikTok iframe embed — no SDK needed
+            const id = getTikTokId(url);
+            return id ? `https://www.tiktok.com/embed/v2/${id}` : null;
+        }
+        case 'facebook':
+        case 'instagram':
+            // These platforms don't support reliable cross-origin iframe embeds.
+            // Return null — the lightbox shows a styled redirect card instead.
+            return null;
+        default:
+            return null;
+    }
+};
+
+// Get thumbnail/cover for any media item
+const getThumbnail = (item) => {
+    if (item.type === 'photo') return '/' + item.path;
+    const platform = getPlatform(item);
+    if (platform === 'youtube') return getYouTubeThumbnail(item.url);
+    // Facebook and Instagram can display branded covers
+    if (platform === 'facebook') return null;
+    if (platform === 'instagram') return null;
+    if (platform === 'tiktok') return null;
+    return null;
+};
+
+// Platform icon SVG paths (used in thumbnails overlays)
+const platformIcon = (item) => {
+    const p = getPlatform(item);
+    if (p === 'youtube') return { color: '#FF0000', label: 'YouTube' };
+    if (p === 'facebook') return { color: '#1877F2', label: 'Facebook' };
+    if (p === 'instagram') return { color: '#E1306C', label: 'Instagram' };
+    if (p === 'tiktok') return { color: '#010101', label: 'TikTok' };
+    return { color: '#94a3b8', label: 'Video' };
+};
+
+// ─── Media Lists ────────────────────────────────────────────────────────────────
 const photos = computed(() => props.profile.media?.filter(item => item.type === 'photo') || []);
-const videos = computed(() => props.profile.media?.filter(item => item.type === 'youtube' || item.type === 'vimeo') || []);
 const upcomingEvents = computed(() => props.profile.events || []);
 
-// Unified list of all media elements for the infinite responsive grid gallery
-const allMedia = computed(() => props.profile.media || []);
+// All media unified for the grid (photos + social videos)
+const allMedia = computed(() => props.profile.media?.filter(item => {
+    // Only include photos and social video links (no local video files)
+    if (item.type === 'photo') return true;
+    const platform = detectPlatform(item.url);
+    return platform !== 'unknown';
+}) || []);
 
-// Lightbox state and functions for media preview
+// ─── Lightbox ──────────────────────────────────────────────────────────────────
 const activeLightboxItem = ref(null);
-const openLightbox = (item) => {
-    activeLightboxItem.value = item;
-};
-const closeLightbox = () => {
-    activeLightboxItem.value = null;
-};
+const openLightbox = (item) => { activeLightboxItem.value = item; };
+const closeLightbox = () => { activeLightboxItem.value = null; };
 
-// Main Profile Photo for Right Column (desktop) or Top Background (mobile)
+// ─── Profile Photo ─────────────────────────────────────────────────────────────
 const mainPhoto = computed(() => {
     if (props.profile.profile_photo_path) {
         return '/' + props.profile.profile_photo_path;
@@ -184,54 +286,16 @@ const nameParts = computed(() => {
     const name = props.profile.name || '';
     const parts = name.split(' ');
     if (parts.length > 1) {
-        return {
-            first: parts[0],
-            rest: parts.slice(1).join(' ')
-        };
+        return { first: parts[0], rest: parts.slice(1).join(' ') };
     }
-    return {
-        first: name,
-        rest: ''
-    };
+    return { first: name, rest: '' };
 });
 
-// Parse Video ID and generate Embed URL
-const getVideoEmbedUrl = (item) => {
-    const url = item.url;
-    if (!url) return null;
 
-    if (item.type === 'youtube') {
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return match && match[2].length === 11
-            ? `https://www.youtube.com/embed/${match[2]}?autoplay=1`
-            : null;
-    } else if (item.type === 'vimeo') {
-        const regExp = /vimeo\.com\/(?:video\/)?([0-9]+)/;
-        const match = url.match(regExp);
-        return match
-            ? `https://player.vimeo.com/video/${match[1]}?autoplay=1`
-            : null;
-    }
-    return null;
-};
 
-// Helper to get YouTube Thumbnail URL
-const getYouTubeThumbnail = (item) => {
-    const url = item.url;
-    if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-    const match = url.match(regExp);
-    return match && match[2].length === 11
-        ? `https://img.youtube.com/vi/${match[2]}/hqdefault.jpg`
-        : null;
-};
-
-// State to track playing video ID
+// State to track playing video ID (legacy compat)
 const activePlayingVideoId = ref(null);
-const playVideo = (videoId) => {
-    activePlayingVideoId.value = videoId;
-};
+const playVideo = (videoId) => { activePlayingVideoId.value = videoId; };
 
 // Build WhatsApp Link
 const getWhatsAppUrl = () => {
@@ -564,76 +628,101 @@ const toggleMusicPlay = () => {
                             <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">Galería &amp; Videos</h3>
                         </div>
 
-                        <!-- Infinite Dynamic Responsive Grid -->
-                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        <!-- Fluid Responsive Grid: photos + social video covers -->
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                             <div
                                 v-for="item in allMedia"
                                 :key="item.id"
-                                class="relative aspect-video rounded-2xl overflow-hidden border border-purple-500/15 hover:border-purple-500/35 transition-all duration-300 shadow-md group cursor-pointer bg-slate-950"
+                                @click="openLightbox(item)"
+                                :class="[
+                                    'relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/30 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md',
+                                    isVerticalVideo(item) ? 'aspect-[9/16]' : 'aspect-video'
+                                ]"
                             >
-                                <!-- YouTube / Vimeo thumbnail -> Click to open in Lightbox -->
-                                <template v-if="item.type === 'youtube' || item.type === 'vimeo'">
-                                    <div class="w-full h-full relative" @click="openLightbox(item)">
-                                        <img
-                                            v-if="getYouTubeThumbnail(item)"
-                                            :src="getYouTubeThumbnail(item)"
-                                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                            alt="Video Cover"
-                                        />
-                                        <div v-else class="w-full h-full bg-gradient-to-tr from-slate-900 to-purple-950/40 flex items-center justify-center">
-                                            <span class="text-[9px] text-purple-400 font-bold uppercase tracking-widest">Video Demo</span>
-                                        </div>
-                                        <!-- Play icon overlay -->
-                                        <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/15 transition-colors flex items-center justify-center">
-                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 group-hover:scale-115 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
-                                                <svg class="h-4.5 w-4.5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24">
-                                                    <path d="M8 5v14l11-7z"/>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                        <!-- Title Overlay -->
-                                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
-                                            <p class="text-[9px] font-bold text-white truncate">{{ item.title }}</p>
-                                        </div>
+                                <!-- ── PHOTO ── -->
+                                <template v-if="getPlatform(item) === 'photo'">
+                                    <img
+                                        :src="'/' + item.path"
+                                        :alt="item.title"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <p class="text-[9px] font-bold text-white truncate text-center">{{ item.title }}</p>
                                     </div>
                                 </template>
 
-                                <!-- Local Video Player -->
-                                <template v-else-if="item.type === 'video' && item.path">
-                                    <div class="w-full h-full relative" @click="openLightbox(item)">
-                                        <video
-                                            :src="'/' + item.path"
-                                            class="w-full h-full object-cover pointer-events-none"
-                                            preload="metadata"
-                                            muted
-                                        ></video>
-                                        <!-- Play icon overlay -->
-                                        <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/15 transition-colors flex items-center justify-center">
-                                            <div :class="['w-9 h-9 rounded-full bg-gradient-to-r flex items-center justify-center text-slate-950 group-hover:scale-115 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
-                                                <svg class="h-4.5 w-4.5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24">
-                                                    <path d="M8 5v14l11-7z"/>
-                                                </svg>
-                                            </div>
+                                <!-- ── YOUTUBE thumbnail ── -->
+                                <template v-else-if="getPlatform(item) === 'youtube'">
+                                    <img
+                                        v-if="getThumbnail(item)"
+                                        :src="getThumbnail(item)"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        alt="YouTube"
+                                    />
+                                    <div v-else class="w-full h-full bg-gradient-to-tr from-slate-900 to-red-950/30 flex items-center justify-center">
+                                        <svg class="h-10 w-10 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 00-2.1 2.1C0 8 0 12 0 12s0 4 .5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 16 24 12 24 12s0-4-.5-5.8zm-14 9.4V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                                    </div>
+                                    <!-- Play overlay -->
+                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                        <div :class="['w-10 h-10 rounded-full bg-gradient-to-r flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
+                                            <svg class="h-5 w-5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                         </div>
-                                        <!-- Title Overlay -->
-                                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
-                                            <p class="text-[9px] font-bold text-white truncate">{{ item.title }}</p>
-                                        </div>
+                                    </div>
+                                    <!-- Platform badge -->
+                                    <div class="absolute top-2 right-2 bg-red-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">YT</div>
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title }}</p>
                                     </div>
                                 </template>
 
-                                <!-- Photo / Image -->
-                                <template v-else>
-                                    <div class="w-full h-full relative" @click="openLightbox(item)">
-                                        <img
-                                            :src="'/' + item.path"
-                                            :alt="item.title"
-                                            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                            <p class="text-[9px] font-bold text-white truncate text-center">{{ item.title }}</p>
+                                <!-- ── FACEBOOK video cover ── -->
+                                <template v-else-if="getPlatform(item) === 'facebook'">
+                                    <div class="w-full h-full bg-gradient-to-tr from-blue-950/60 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
+                                        <svg class="h-10 w-10 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de Facebook' }}</p>
+                                    </div>
+                                    <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/5 transition-colors flex items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-[#1877F2]/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                                         </div>
                                     </div>
+                                    <div class="absolute top-2 right-2 bg-[#1877F2]/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">FB</div>
+                                </template>
+
+                                <!-- ── INSTAGRAM cover ── -->
+                                <template v-else-if="getPlatform(item) === 'instagram'">
+                                    <div class="w-full h-full bg-gradient-to-tr from-pink-950/60 via-purple-950/40 to-orange-950/40 flex flex-col items-center justify-center gap-3 p-4">
+                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none">
+                                            <defs><linearGradient id="ig-grad" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+                                            <rect width="24" height="24" rx="6" fill="url(#ig-grad)"/>
+                                            <path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.75A2.25 2.25 0 1112 9.75a2.25 2.25 0 010 4.5zM16 8a.75.75 0 100-1.5.75.75 0 000 1.5z" fill="white"/>
+                                            <path fill-rule="evenodd" d="M8 3h8a5 5 0 015 5v8a5 5 0 01-5 5H8a5 5 0 01-5-5V8a5 5 0 015-5zm0 1.5A3.5 3.5 0 004.5 8v8A3.5 3.5 0 008 19.5h8a3.5 3.5 0 003.5-3.5V8A3.5 3.5 0 0016 4.5H8z" fill="white"/>
+                                        </svg>
+                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Reel de Instagram' }}</p>
+                                    </div>
+                                    <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/5 transition-colors flex items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-pink-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">IG</div>
+                                </template>
+
+                                <!-- ── TIKTOK cover ── -->
+                                <template v-else-if="getPlatform(item) === 'tiktok'">
+                                    <div class="w-full h-full bg-gradient-to-b from-slate-950 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
+                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" class="fill-[#69C9D0]"/>
+                                            <path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" class="fill-[#EE1D52]"/>
+                                        </svg>
+                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de TikTok' }}</p>
+                                    </div>
+                                    <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/5 transition-colors flex items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-[#EE1D52]/50 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-slate-900/90 text-[#EE1D52] border border-[#EE1D52]/50 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">TT</div>
                                 </template>
                             </div>
                         </div>
@@ -715,47 +804,138 @@ const toggleMusicPlay = () => {
                 </div>
             </div>
 
-        <!-- Lightbox Modal for Photo/Video Preview -->
-        <div v-if="activeLightboxItem" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4" @click="closeLightbox">
+        <!-- ─── LIGHTBOX MODAL ──────────────────────────────────────────────────── -->
+        <Teleport to="body">
+        <Transition
+            enter-active-class="transition duration-200 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-150 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+        >
+        <div
+            v-if="activeLightboxItem"
+            class="fixed inset-0 bg-black/92 backdrop-blur-sm z-[9999] flex items-center justify-center p-4"
+            @click="closeLightbox"
+        >
             <!-- Close Button -->
             <button
-                @click="closeLightbox"
-                class="absolute top-6 right-6 text-white/80 hover:text-white bg-slate-900/60 hover:bg-slate-800/80 p-3 rounded-full transition-all duration-300 hover:scale-105 z-55 flex items-center justify-center text-xl font-bold cursor-pointer"
-                title="Cerrar vista"
-            >
-                ✕
-            </button>
+                @click.stop="closeLightbox"
+                class="absolute top-5 right-5 text-white/70 hover:text-white bg-slate-900/70 hover:bg-slate-800 border border-slate-700/50 p-2.5 rounded-full transition-all duration-300 hover:scale-105 z-10 flex items-center justify-center text-base font-black cursor-pointer shadow-xl"
+                title="Cerrar"
+            >✕</button>
 
-            <!-- Lightbox Content Container -->
-            <div class="max-w-5xl max-h-[85vh] w-full flex items-center justify-center" @click.stop>
-                <!-- YouTube or Vimeo iframe inside Lightbox -->
+            <!-- Lightbox inner panel (click inside won't close) -->
+            <div
+                :class="[
+                    'w-full flex items-center justify-center',
+                    activeLightboxItem && (getPlatform(activeLightboxItem) === 'tiktok' || getPlatform(activeLightboxItem) === 'instagram')
+                        ? 'max-h-[85vh] max-w-xs'
+                        : 'max-h-[85vh] max-w-4xl'
+                ]"
+                @click.stop
+            >
+                <!-- ── PHOTO ── -->
+                <img
+                    v-if="getPlatform(activeLightboxItem) === 'photo'"
+                    :src="'/' + activeLightboxItem.path"
+                    :alt="activeLightboxItem.title"
+                    :class="['max-w-full max-h-[82vh] object-contain rounded-2xl border shadow-2xl', tc.lightbox_border]"
+                />
+
+                <!-- ── YOUTUBE iframe ── -->
                 <iframe
-                    v-if="activeLightboxItem.type === 'youtube' || activeLightboxItem.type === 'vimeo'"
-                    :src="getVideoEmbedUrl(activeLightboxItem)"
-                    :class="['w-full aspect-video rounded-2xl max-w-4xl max-h-[75vh] border', tc.lightbox_border]"
+                    v-else-if="getPlatform(activeLightboxItem) === 'youtube'"
+                    :src="getEmbedUrl(activeLightboxItem, true)"
+                    :class="['w-full aspect-video rounded-2xl border shadow-2xl max-h-[80vh]', tc.lightbox_border]"
                     frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowfullscreen
                 ></iframe>
 
-                <!-- Local Video Player -->
-                <video
-                    v-else-if="activeLightboxItem.type === 'video' && activeLightboxItem.path"
-                    :src="'/' + activeLightboxItem.path"
-                    :class="['max-w-full max-h-[80vh] rounded-2xl border', tc.lightbox_border]"
-                    controls
-                    autoplay
-                ></video>
+                <!-- ── FACEBOOK redirect card ── -->
+                <div
+                    v-else-if="getPlatform(activeLightboxItem) === 'facebook'"
+                    :class="['w-full max-w-sm rounded-2xl border overflow-hidden shadow-2xl bg-slate-900/80 backdrop-blur-md', tc.lightbox_border]"
+                >
+                    <div class="flex flex-col items-center justify-center p-8 gap-5">
+                        <!-- Facebook logo -->
+                        <div class="w-20 h-20 rounded-2xl bg-[#1877F2] flex items-center justify-center shadow-[0_0_30px_rgba(24,119,242,0.5)]">
+                            <svg class="h-10 w-10 fill-white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-white font-bold text-sm mb-1">{{ activeLightboxItem.title || 'Video de Facebook' }}</p>
+                            <p class="text-slate-400 text-xs">Los videos de Facebook se reproducen en su plataforma original.</p>
+                        </div>
+                        <a
+                            :href="activeLightboxItem.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center gap-2 bg-[#1877F2] hover:bg-[#166fe5] text-white text-xs font-black uppercase tracking-wider px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hover:scale-[1.02]"
+                        >
+                            <svg class="h-4 w-4 fill-white" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                            Ver en Facebook
+                        </a>
+                    </div>
+                </div>
 
-                <!-- Photo Image -->
-                <img
-                    v-else-if="activeLightboxItem.type === 'photo'"
-                    :src="'/' + activeLightboxItem.path"
-                    :alt="activeLightboxItem.title"
-                    :class="['max-w-full max-h-[80vh] object-contain rounded-2xl border', tc.lightbox_border]"
-                />
+                <!-- ── INSTAGRAM redirect card ── -->
+                <div
+                    v-else-if="getPlatform(activeLightboxItem) === 'instagram'"
+                    :class="['w-full max-w-sm rounded-2xl border overflow-hidden shadow-2xl bg-slate-900/80 backdrop-blur-md', tc.lightbox_border]"
+                >
+                    <div class="flex flex-col items-center justify-center p-8 gap-5">
+                        <div class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-orange-500 via-pink-600 to-purple-700 flex items-center justify-center shadow-[0_0_30px_rgba(236,72,153,0.4)]">
+                            <svg class="h-10 w-10 fill-white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-white font-bold text-sm mb-1">{{ activeLightboxItem.title || 'Reel de Instagram' }}</p>
+                            <p class="text-slate-400 text-xs">Los Reels de Instagram se reproducen en su plataforma original.</p>
+                        </div>
+                        <a
+                            :href="activeLightboxItem.url"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-400 hover:to-pink-500 text-white text-xs font-black uppercase tracking-wider px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hover:scale-[1.02]"
+                        >
+                            <svg class="h-4 w-4 fill-white" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z"/></svg>
+                            Ver en Instagram
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ── TIKTOK iframe embed (oficial embed/v2) ── -->
+                <div
+                    v-else-if="getPlatform(activeLightboxItem) === 'tiktok'"
+                    :class="['rounded-2xl border overflow-hidden shadow-2xl bg-slate-950', tc.lightbox_border]"
+                    style="width:325px; height:580px;"
+                >
+                    <iframe
+                        v-if="getTikTokId(activeLightboxItem.url)"
+                        :src="getEmbedUrl(activeLightboxItem)"
+                        style="width:325px; height:580px;"
+                        frameborder="0"
+                        allow="fullscreen"
+                        allowfullscreen
+                        scrolling="no"
+                    ></iframe>
+                    <!-- Fallback if no video ID detected -->
+                    <div v-else class="w-full h-full flex flex-col items-center justify-center gap-4 p-6">
+                        <svg class="h-12 w-12" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" fill="#69C9D0"/>
+                            <path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" fill="#EE1D52"/>
+                        </svg>
+                        <a :href="activeLightboxItem.url" target="_blank" rel="noopener noreferrer"
+                           class="bg-slate-800 border border-[#EE1D52]/40 text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-slate-700 transition-all">
+                            Ver en TikTok
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
+        </Transition>
+        </Teleport>
     </div>
 </div>
 </template>

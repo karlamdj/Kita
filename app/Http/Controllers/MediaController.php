@@ -37,50 +37,52 @@ class MediaController extends Controller
     }
 
     /**
-     * Store a newly created media asset (video URL or uploaded photo/video).
+     * Store a newly created media asset (social video URL or uploaded photo).
+     * NOTE: Local video file uploads (.mp4) are prohibited by business rule.
+     *       Videos are managed exclusively via external social media links:
+     *       YouTube, Facebook, Instagram, TikTok.
      */
     public function store(Request $request): RedirectResponse
     {
         $profile = $request->user()->profile;
 
-        // Validation based on type (increased limit to 100MB for video files)
         $request->validate([
-            'type' => 'required|in:video,photo',
-            'url' => 'nullable|required_if:type,video|url',
-            'file' => 'nullable|required_if:type,photo|file|mimes:jpeg,png,jpg,gif,webp,mp4,mov,webm|max:102400',
+            'type'  => 'required|in:video,photo',
+            'url'   => 'nullable|required_if:type,video|url',
+            'file'  => 'nullable|required_if:type,photo|file|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'title' => 'nullable|string|max:255',
         ]);
 
         if ($request->input('type') === 'video') {
             $url = $request->input('url');
-            $mediaType = 'youtube';
 
-            if (Str::contains($url, ['vimeo.com'])) {
+            // Detect platform from URL
+            $mediaType = 'youtube'; // default
+            if (Str::contains($url, ['facebook.com', 'fb.watch'])) {
+                $mediaType = 'facebook';
+            } elseif (Str::contains($url, ['instagram.com'])) {
+                $mediaType = 'instagram';
+            } elseif (Str::contains($url, ['tiktok.com'])) {
+                $mediaType = 'tiktok';
+            } elseif (Str::contains($url, ['vimeo.com'])) {
                 $mediaType = 'vimeo';
             }
 
             $profile->media()->create([
-                'type' => $mediaType,
-                'url' => $url,
+                'type'  => $mediaType,
+                'url'   => $url,
                 'title' => $request->input('title') ?? 'Video promocional',
             ]);
         } else {
-            // Store file in public disk (can be a photo or a local video file)
+            // Photo upload only (local video files are not allowed)
             if ($request->hasFile('file')) {
                 $file = $request->file('file');
-                $mimeType = $file->getMimeType();
-                $extension = strtolower($file->getClientOriginalExtension());
-
-                $isLocalVideo = Str::contains($mimeType, 'video/') || in_array($extension, ['mp4', 'mov', 'webm']);
-                $mediaType = $isLocalVideo ? 'video' : 'photo';
-                $defaultTitle = $isLocalVideo ? 'Video de promoción' : 'Foto de promoción';
-
                 $path = $file->store('media', 'public');
 
                 $profile->media()->create([
-                    'type' => $mediaType,
-                    'path' => 'storage/' . $path, // Mapped to /storage/media/filename in public
-                    'title' => $request->input('title') ?? $defaultTitle,
+                    'type'  => 'photo',
+                    'path'  => 'storage/' . $path,
+                    'title' => $request->input('title') ?? 'Foto de promoción',
                 ]);
             }
         }
