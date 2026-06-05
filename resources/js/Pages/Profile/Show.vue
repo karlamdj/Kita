@@ -236,7 +236,12 @@ const getEmbedUrl = (item, autoplay = true) => {
 
 // Get thumbnail/cover for any media item
 const getThumbnail = (item) => {
-    if (item.type === 'photo') return '/' + item.path;
+    if (item.type === 'photo') {
+        return item.path ? (item.path.startsWith('http') ? item.path : '/' + item.path) : null;
+    }
+    if (item.path) {
+        return item.path.startsWith('http') ? item.path : '/' + item.path;
+    }
     const platform = getPlatform(item);
     if (platform === 'youtube') return getYouTubeThumbnail(item.url);
     // Facebook and Instagram can display branded covers
@@ -268,6 +273,17 @@ const allMedia = computed(() => props.profile.media?.filter(item => {
     return platform !== 'unknown';
 }) || []);
 
+// Filtered media by aspect format for carousels
+const verticalMedia = computed(() => allMedia.value.filter(item => {
+    const platform = getPlatform(item);
+    return platform === 'tiktok' || platform === 'instagram';
+}));
+
+const horizontalMedia = computed(() => allMedia.value.filter(item => {
+    const platform = getPlatform(item);
+    return platform === 'youtube' || platform === 'facebook' || platform === 'vimeo' || platform === 'photo';
+}));
+
 // ─── Lightbox ──────────────────────────────────────────────────────────────────
 const activeLightboxItem = ref(null);
 const openLightbox = (item) => { activeLightboxItem.value = item; };
@@ -278,7 +294,7 @@ const mainPhoto = computed(() => {
     if (props.profile.profile_photo_path) {
         return '/' + props.profile.profile_photo_path;
     }
-    return photos.value.length > 0 ? '/' + photos.value[0].path : null;
+    return null;
 });
 
 // Split name for high-impact typography
@@ -298,14 +314,19 @@ const activePlayingVideoId = ref(null);
 const playVideo = (videoId) => { activePlayingVideoId.value = videoId; };
 
 // Build WhatsApp Link
-const getWhatsAppUrl = () => {
+const getWhatsAppUrl = (eventTitle = null) => {
     const phone = props.profile.widget_status?.whatsapp || '';
     const formattedPhone = phone.replace(/[^0-9]/g, '');
-    if (formattedPhone) {
-        return `https://wa.me/${formattedPhone}?text=Hola%20${encodeURIComponent(props.profile.name)},%20te%20contacto%20desde%20tu%20perfil%20de%20KITA.%20Me%20gustaría%20cotizar%20un%20show!`;
+    const targetPhone = formattedPhone || '523221234567';
+    
+    let text = '';
+    if (eventTitle) {
+        text = `Hola ${props.profile.name}, vi en KITA que tienes un evento proximo en ${eventTitle} quisiera adquirir accesos`;
+    } else {
+        text = `Hola ${props.profile.name}, te contacto desde tu perfil de KITA. Me gustaría cotizar un show!`;
     }
-    // Default fallback
-    return `https://wa.me/523221234567?text=Hola%20${encodeURIComponent(props.profile.name)},%20te%20contacto%20desde%20tu%20perfil%20de%20KITA.%20Me%20gustaría%20cotizar%20un%20show!`;
+    
+    return `https://wa.me/${targetPhone}?text=${encodeURIComponent(text)}`;
 };
 
 // Format show dates
@@ -618,115 +639,7 @@ const toggleMusicPlay = () => {
                         </div>
                     </section>
 
-                    <!-- GALLERY WIDGET — below Music in left column -->
-                    <section
-                        v-if="profile.widget_status?.media !== false && allMedia.length > 0"
-                        :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 shadow-xl relative overflow-hidden group transition-all duration-300 border', tc.widget_card]"
-                    >
-                        <div class="flex items-center gap-3 mb-6">
-                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">Galería &amp; Videos</h3>
-                        </div>
 
-                        <!-- Fluid Responsive Grid: photos + social video covers -->
-                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <div
-                                v-for="item in allMedia"
-                                :key="item.id"
-                                @click="openLightbox(item)"
-                                :class="[
-                                    'relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/30 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md',
-                                    isVerticalVideo(item) ? 'aspect-[9/16]' : 'aspect-video'
-                                ]"
-                            >
-                                <!-- ── PHOTO ── -->
-                                <template v-if="getPlatform(item) === 'photo'">
-                                    <img
-                                        :src="'/' + item.path"
-                                        :alt="item.title"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <p class="text-[9px] font-bold text-white truncate text-center">{{ item.title }}</p>
-                                    </div>
-                                </template>
-
-                                <!-- ── YOUTUBE thumbnail ── -->
-                                <template v-else-if="getPlatform(item) === 'youtube'">
-                                    <img
-                                        v-if="getThumbnail(item)"
-                                        :src="getThumbnail(item)"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        alt="YouTube"
-                                    />
-                                    <div v-else class="w-full h-full bg-gradient-to-tr from-slate-900 to-red-950/30 flex items-center justify-center">
-                                        <svg class="h-10 w-10 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 00-2.1 2.1C0 8 0 12 0 12s0 4 .5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 16 24 12 24 12s0-4-.5-5.8zm-14 9.4V8.4l6.3 3.6-6.3 3.6z"/></svg>
-                                    </div>
-                                    <!-- Play overlay -->
-                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
-                                        <div :class="['w-10 h-10 rounded-full bg-gradient-to-r flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
-                                            <svg class="h-5 w-5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <!-- Platform badge -->
-                                    <div class="absolute top-2 right-2 bg-red-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">YT</div>
-                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
-                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title }}</p>
-                                    </div>
-                                </template>
-
-                                <!-- ── FACEBOOK video cover ── -->
-                                <template v-else-if="getPlatform(item) === 'facebook'">
-                                    <div class="w-full h-full bg-gradient-to-tr from-blue-950/60 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
-                                        <svg class="h-10 w-10 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de Facebook' }}</p>
-                                    </div>
-                                    <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/5 transition-colors flex items-center justify-center">
-                                        <div class="w-10 h-10 rounded-full bg-[#1877F2]/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <div class="absolute top-2 right-2 bg-[#1877F2]/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">FB</div>
-                                </template>
-
-                                <!-- ── INSTAGRAM cover ── -->
-                                <template v-else-if="getPlatform(item) === 'instagram'">
-                                    <div class="w-full h-full bg-gradient-to-tr from-pink-950/60 via-purple-950/40 to-orange-950/40 flex flex-col items-center justify-center gap-3 p-4">
-                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none">
-                                            <defs><linearGradient id="ig-grad" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
-                                            <rect width="24" height="24" rx="6" fill="url(#ig-grad)"/>
-                                            <path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.75A2.25 2.25 0 1112 9.75a2.25 2.25 0 010 4.5zM16 8a.75.75 0 100-1.5.75.75 0 000 1.5z" fill="white"/>
-                                            <path fill-rule="evenodd" d="M8 3h8a5 5 0 015 5v8a5 5 0 01-5 5H8a5 5 0 01-5-5V8a5 5 0 015-5zm0 1.5A3.5 3.5 0 004.5 8v8A3.5 3.5 0 008 19.5h8a3.5 3.5 0 003.5-3.5V8A3.5 3.5 0 0016 4.5H8z" fill="white"/>
-                                        </svg>
-                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Reel de Instagram' }}</p>
-                                    </div>
-                                    <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/5 transition-colors flex items-center justify-center">
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <div class="absolute top-2 right-2 bg-pink-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">IG</div>
-                                </template>
-
-                                <!-- ── TIKTOK cover ── -->
-                                <template v-else-if="getPlatform(item) === 'tiktok'">
-                                    <div class="w-full h-full bg-gradient-to-b from-slate-950 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
-                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" class="fill-[#69C9D0]"/>
-                                            <path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" class="fill-[#EE1D52]"/>
-                                        </svg>
-                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de TikTok' }}</p>
-                                    </div>
-                                    <div class="absolute inset-0 bg-slate-950/20 group-hover:bg-slate-950/5 transition-colors flex items-center justify-center">
-                                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-[#EE1D52]/50 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <div class="absolute top-2 right-2 bg-slate-900/90 text-[#EE1D52] border border-[#EE1D52]/50 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">TT</div>
-                                </template>
-                            </div>
-                        </div>
-                    </section>
                 </div>
 
                 <!-- WIDGETS RIGHT: Próximas Presentaciones — col-span-5, to the RIGHT of Music -->
@@ -791,7 +704,7 @@ const toggleMusicPlay = () => {
                                 <!-- Action redirection (Ticket Redirection CTA) -->
                                 <div class="w-full sm:w-auto flex justify-end shrink-0">
                                     <a
-                                        :href="getWhatsAppUrl()"
+                                        :href="getWhatsAppUrl(event.title)"
                                         target="_blank"
                                         :class="['bg-slate-900 border border-slate-800 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer shadow-md select-none w-full sm:w-auto text-center', tc.event_cta]"
                                     >
@@ -803,6 +716,172 @@ const toggleMusicPlay = () => {
                     </section>
                 </div>
             </div>
+
+            <!-- 3. GALLERY & VIDEOS CAROUSEL SECTION (Full Width, split by layout orientation) -->
+            <section
+                v-if="profile.widget_status?.media !== false && allMedia.length > 0"
+                :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden group transition-all duration-300 border w-full z-10', tc.widget_card]"
+            >
+                <div class="flex items-center gap-3 mb-8">
+                    <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                    <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">Galería &amp; Videos</h3>
+                </div>
+
+                <!-- Vertical Carousel: TikTok & Instagram (Aspect 9:16) -->
+                <div v-if="verticalMedia.length > 0" class="mb-10 relative">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                        <span>📱</span> Reels &amp; TikToks
+                    </h4>
+                    <!-- Fade borders for streaming feel -->
+                    <div class="relative w-full">
+                        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-950/20 to-transparent pointer-events-none z-10"></div>
+                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-950/20 to-transparent pointer-events-none z-10"></div>
+
+                        <div class="flex gap-5 overflow-x-auto py-2 scroll-smooth snap-x snap-mandatory scrollbar-hide">
+                            <div
+                                v-for="item in verticalMedia"
+                                :key="item.id"
+                                @click="openLightbox(item)"
+                                class="snap-start shrink-0 w-[180px] sm:w-[220px] aspect-[9/16] relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/30 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md"
+                            >
+                                <!-- ── INSTAGRAM cover ── -->
+                                <template v-if="getPlatform(item) === 'instagram'">
+                                    <img
+                                        v-if="getThumbnail(item)"
+                                        :src="getThumbnail(item)"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        alt="Instagram Reel"
+                                    />
+                                    <div v-else class="w-full h-full bg-gradient-to-tr from-pink-950/60 via-purple-950/40 to-orange-950/40 flex flex-col items-center justify-center gap-3 p-4">
+                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none">
+                                            <defs><linearGradient id="ig-grad-new" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+                                            <rect width="24" height="24" rx="6" fill="url(#ig-grad-new)"/>
+                                            <path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.75A2.25 2.25 0 1112 9.75a2.25 2.25 0 010 4.5zM16 8a.75.75 0 100-1.5.75.75 0 000 1.5z" fill="white"/>
+                                            <path fill-rule="evenodd" d="M8 3h8a5 5 0 015 5v8a5 5 0 01-5 5H8a5 5 0 01-5-5V8a5 5 0 015-5zm0 1.5A3.5 3.5 0 004.5 8v8A3.5 3.5 0 008 19.5h8a3.5 3.5 0 003.5-3.5V8A3.5 3.5 0 0016 4.5H8z" fill="white"/>
+                                        </svg>
+                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Reel de Instagram' }}</p>
+                                    </div>
+                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-pink-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">IG</div>
+                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Reel de Instagram' }}</p>
+                                    </div>
+                                </template>
+
+                                <!-- ── TIKTOK cover ── -->
+                                <template v-else-if="getPlatform(item) === 'tiktok'">
+                                    <img
+                                        v-if="getThumbnail(item)"
+                                        :src="getThumbnail(item)"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        alt="TikTok Video"
+                                    />
+                                    <div v-else class="w-full h-full bg-gradient-to-b from-slate-950 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
+                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" class="fill-[#69C9D0]"/>
+                                            <path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" class="fill-[#EE1D52]"/>
+                                        </svg>
+                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de TikTok' }}</p>
+                                    </div>
+                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-[#EE1D52]/50 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-slate-900/90 text-[#EE1D52] border border-[#EE1D52]/50 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">TT</div>
+                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Video de TikTok' }}</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Horizontal Carousel: YouTube, Facebook & Photos (Aspect 16:9) -->
+                <div v-if="horizontalMedia.length > 0" class="relative">
+                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
+                        <span>🎬</span> Videos &amp; Galería
+                    </h4>
+                    <!-- Fade borders for streaming feel -->
+                    <div class="relative w-full">
+                        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-950/20 to-transparent pointer-events-none z-10"></div>
+                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-950/20 to-transparent pointer-events-none z-10"></div>
+
+                        <div class="flex gap-5 overflow-x-auto py-2 scroll-smooth snap-x snap-mandatory scrollbar-hide">
+                            <div
+                                v-for="item in horizontalMedia"
+                                :key="item.id"
+                                @click="openLightbox(item)"
+                                class="snap-start shrink-0 w-[260px] sm:w-[320px] aspect-video relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/30 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md"
+                            >
+                                <!-- ── PHOTO ── -->
+                                <template v-if="getPlatform(item) === 'photo'">
+                                    <img
+                                        :src="getThumbnail(item)"
+                                        :alt="item.title"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                    />
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <p class="text-[9px] font-bold text-white truncate text-center">{{ item.title }}</p>
+                                    </div>
+                                </template>
+
+                                <!-- ── YOUTUBE thumbnail ── -->
+                                <template v-else-if="getPlatform(item) === 'youtube'">
+                                    <img
+                                        v-if="getThumbnail(item)"
+                                        :src="getThumbnail(item)"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        alt="YouTube"
+                                    />
+                                    <div v-else class="w-full h-full bg-gradient-to-tr from-slate-900 to-red-950/30 flex items-center justify-center">
+                                        <svg class="h-10 w-10 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 00-2.1 2.1C0 8 0 12 0 12s0 4 .5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 16 24 12 24 12s0-4-.5-5.8zm-14 9.4V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                                    </div>
+                                    <!-- Play overlay -->
+                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                        <div :class="['w-10 h-10 rounded-full bg-gradient-to-r flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
+                                            <svg class="h-5 w-5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    <!-- Platform badge -->
+                                    <div class="absolute top-2 right-2 bg-red-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">YT</div>
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title }}</p>
+                                    </div>
+                                </template>
+
+                                <!-- ── FACEBOOK video cover ── -->
+                                <template v-else-if="getPlatform(item) === 'facebook'">
+                                    <img
+                                        v-if="getThumbnail(item)"
+                                        :src="getThumbnail(item)"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        alt="Facebook Video"
+                                    />
+                                    <div v-else class="w-full h-full bg-gradient-to-tr from-blue-950/60 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
+                                        <svg class="h-10 w-10 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de Facebook' }}</p>
+                                    </div>
+                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                        <div class="w-10 h-10 rounded-full bg-[#1877F2]/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    <div class="absolute top-2 right-2 bg-[#1877F2]/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">FB</div>
+                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Video de Facebook' }}</p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
         <!-- ─── LIGHTBOX MODAL ──────────────────────────────────────────────────── -->
         <Teleport to="body">
@@ -839,7 +918,7 @@ const toggleMusicPlay = () => {
                 <!-- ── PHOTO ── -->
                 <img
                     v-if="getPlatform(activeLightboxItem) === 'photo'"
-                    :src="'/' + activeLightboxItem.path"
+                    :src="getThumbnail(activeLightboxItem)"
                     :alt="activeLightboxItem.title"
                     :class="['max-w-full max-h-[82vh] object-contain rounded-2xl border shadow-2xl', tc.lightbox_border]"
                 />
@@ -962,5 +1041,12 @@ const toggleMusicPlay = () => {
 }
 .paused {
     animation-play-state: paused !important;
+}
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
 }
 </style>

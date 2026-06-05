@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('profiles', function (Blueprint $table) {
-            $table->string('profile_photo_path')->nullable()->after('bio');
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('google_id')->nullable()->unique()->after('id');
+            $table->string('avatar')->nullable()->after('password');
         });
     }
 
@@ -21,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('profiles', function (Blueprint $table) {
-            $table->dropColumn('profile_photo_path');
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn(['google_id', 'avatar']);
         });
     }
 };

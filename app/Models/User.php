@@ -7,11 +7,11 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'password', 'google_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -19,11 +19,34 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
-     * Get the profile associated with the user.
+     * Get the profiles for the user.
      */
-    public function profile(): HasOne
+    public function profiles(): HasMany
     {
-        return $this->hasOne(Profile::class);
+        return $this->hasMany(Profile::class);
+    }
+
+    /**
+     * Get the profiles relation for backwards compatibility.
+     */
+    public function profile(): HasMany
+    {
+        return $this->profiles();
+    }
+
+    /**
+     * Get the active profile (or the first profile).
+     */
+    public function getProfileAttribute()
+    {
+        $activeId = session('active_profile_id');
+        if ($activeId) {
+            $profile = $this->profiles()->find($activeId);
+            if ($profile) {
+                return $profile;
+            }
+        }
+        return $this->profiles()->first();
     }
 
     /**

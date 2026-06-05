@@ -30,11 +30,27 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $userProfiles = $user ? $user->profiles()->get() : collect();
+        
+        $activeProfile = null;
+        if ($user) {
+            $activeProfileId = $request->session()->get('active_profile_id');
+            if ($activeProfileId) {
+                $activeProfile = $user->profiles()->find($activeProfileId);
+            }
+            if (!$activeProfile && $userProfiles->isNotEmpty()) {
+                $activeProfile = $userProfiles->first();
+                $request->session()->put('active_profile_id', $activeProfile->id);
+            }
+        }
+
         return [
             ...parent::share($request),
             'auth' => [
                 'user' => $user,
-                'profile_theme' => $user ? ($user->profile?->theme ?? 'kita-neon') : 'kita-neon',
+                'user_profiles' => $userProfiles,
+                'active_profile' => $activeProfile,
+                'profile_theme' => $activeProfile ? $activeProfile->theme : 'kita-neon',
             ],
         ];
     }

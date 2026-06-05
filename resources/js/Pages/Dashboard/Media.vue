@@ -22,10 +22,13 @@ const photoForm = useForm({
 });
 
 // Video Form State
+const videoThumbnailInput = ref(null);
+
 const videoForm = useForm({
     type: 'video',
     url: '',
     title: '',
+    thumbnail: null,
 });
 
 // Handle File Selection/Previews
@@ -87,6 +90,30 @@ const getVideoEmbedUrl = (item) => {
     return null;
 };
 
+const getYouTubeId = (url) => {
+    if (!url) return null;
+    const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+};
+
+const getYouTubeThumbnail = (url) => {
+    const id = getYouTubeId(url);
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+};
+
+const getThumbnail = (item) => {
+    if (item.type === 'photo') {
+        return item.path ? (item.path.startsWith('http') ? item.path : '/' + item.path) : null;
+    }
+    if (item.path) {
+        return item.path.startsWith('http') ? item.path : '/' + item.path;
+    }
+    const platform = getPlatform(item);
+    if (platform === 'youtube') return getYouTubeThumbnail(item.url);
+    return null;
+};
+
 const setPhotoFile = (file) => {
     const isImage = file.type.startsWith('image/');
     if (!isImage) {
@@ -137,6 +164,7 @@ const submitVideo = () => {
         preserveScroll: true,
         onSuccess: () => {
             videoForm.reset();
+            if (videoThumbnailInput.value) videoThumbnailInput.value.value = null;
         },
     });
 };
@@ -285,6 +313,18 @@ const deleteMedia = (id) => {
                                     <p class="text-[10px] text-slate-500 mt-1">Acepta enlaces públicos de YouTube • Facebook • Instagram • TikTok.</p>
                                 </div>
 
+                                <div>
+                                    <label class="text-xs font-semibold text-slate-400 block mb-1">Sobrescribir Miniatura (Opcional)</label>
+                                    <input
+                                        ref="videoThumbnailInput"
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                        @change="e => videoForm.thumbnail = e.target.files[0]"
+                                        class="w-full text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700 cursor-pointer text-xs"
+                                    />
+                                    <p class="text-[10px] text-slate-500 mt-1">Las miniaturas de YouTube, TikTok, Facebook e Instagram se generan automáticamente. Sube una imagen solo si deseas cambiarla por otra.</p>
+                                </div>
+
                                 <button
                                     type="submit"
                                     :disabled="!videoForm.url || videoForm.processing"
@@ -330,41 +370,79 @@ const deleteMedia = (id) => {
                             <div class="relative bg-slate-950 aspect-video flex items-center justify-center overflow-hidden">
                                 
                                 <!-- Render by platform type -->
-                                <!-- YouTube: iframe embed -->
+                                <!-- YouTube: static image card -->
                                 <template v-if="getPlatform(item) === 'youtube'">
-                                    <iframe
-                                        v-if="getVideoEmbedUrl(item)"
-                                        :src="getVideoEmbedUrl(item)"
-                                        class="w-full h-full"
-                                        frameborder="0"
-                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                        allowfullscreen
-                                    ></iframe>
+                                    <img
+                                        v-if="getThumbnail(item)"
+                                        :src="getThumbnail(item)"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        alt="YouTube"
+                                    />
                                     <div v-else class="text-slate-500 text-xs text-center px-4">
                                         <svg class="h-10 w-10 text-red-500/70 mx-auto mb-1" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M23.498 6.163a3.003 3.003 0 00-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 00-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 002.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 002.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                                         </svg>
                                         Enlace de YouTube guardado
                                     </div>
+                                    <!-- Play overlay -->
+                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center pointer-events-none">
+                                        <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        </div>
+                                    </div>
+                                    <!-- Platform badge -->
+                                    <div class="absolute top-2 right-2 bg-red-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">YT</div>
                                 </template>
 
                                 <!-- Facebook / Instagram / TikTok: external link card -->
                                 <template v-else-if="getPlatform(item) === 'facebook' || getPlatform(item) === 'instagram' || getPlatform(item) === 'tiktok'">
-                                    <div class="w-full h-full flex flex-col items-center justify-center gap-2 bg-slate-950 p-4">
+                                    <img
+                                        v-if="getThumbnail(item)"
+                                        :src="getThumbnail(item)"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        :alt="item.title"
+                                    />
+                                    <div v-else class="w-full h-full flex flex-col items-center justify-center gap-2 bg-slate-950 p-4">
                                         <!-- FB icon -->
                                         <svg v-if="getPlatform(item) === 'facebook'" class="h-8 w-8 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
                                         <!-- IG icon -->
-                                        <svg v-else-if="getPlatform(item) === 'instagram'" class="h-8 w-8" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="ig-db" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><rect width="24" height="24" rx="6" fill="url(#ig-db)"/><circle cx="12" cy="12" r="3.5" stroke="white" stroke-width="1.5" fill="none"/><circle cx="16.5" cy="7.5" r="1" fill="white"/><rect x="3" y="3" width="18" height="18" rx="5" stroke="white" stroke-width="1.5" fill="none"/></svg>
+                                        <svg v-else-if="getPlatform(item) === 'instagram'" class="h-8 w-8" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="ig-db" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs><circle cx="12" cy="12" r="3.5" stroke="white" stroke-width="1.5" fill="none"/><circle cx="16.5" cy="7.5" r="1" fill="white"/><rect x="3" y="3" width="18" height="18" rx="5" stroke="white" stroke-width="1.5" fill="none"/></svg>
                                         <!-- TT icon -->
                                         <svg v-else class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" fill="#69C9D0"/><path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" fill="#EE1D52"/></svg>
                                         <a :href="item.url" target="_blank" class="text-[10px] text-slate-400 hover:text-white font-semibold underline text-center px-2 truncate w-full">Abrir enlace</a>
                                     </div>
+                                    <!-- Play Overlay for when there is a thumbnail -->
+                                    <template v-if="getThumbnail(item)">
+                                        <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center pointer-events-none">
+                                            <div 
+                                                :class="[
+                                                    'w-10 h-10 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300',
+                                                    getPlatform(item) === 'facebook' ? 'bg-[#1877F2]/80' : 
+                                                    getPlatform(item) === 'instagram' ? 'bg-gradient-to-tr from-orange-500 to-pink-600' : 
+                                                    'bg-slate-800 border border-[#EE1D52]/50'
+                                                ]"
+                                            >
+                                                <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                            </div>
+                                        </div>
+                                        <!-- Platform badge -->
+                                        <div 
+                                            :class="[
+                                                'absolute top-2 right-2 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider',
+                                                getPlatform(item) === 'facebook' ? 'bg-[#1877F2]/90' : 
+                                                getPlatform(item) === 'instagram' ? 'bg-pink-600/90' : 
+                                                'bg-slate-900/90 text-[#EE1D52] border border-[#EE1D52]/50'
+                                            ]"
+                                        >
+                                            {{ getPlatform(item) === 'facebook' ? 'FB' : getPlatform(item) === 'instagram' ? 'IG' : 'TT' }}
+                                        </div>
+                                    </template>
                                 </template>
 
                                 <!-- Photo -->
                                 <template v-else>
                                     <img
-                                        :src="'/' + item.path"
+                                        :src="getThumbnail(item)"
                                         :alt="item.title"
                                         class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />

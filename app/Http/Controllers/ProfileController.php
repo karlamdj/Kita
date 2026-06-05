@@ -119,7 +119,7 @@ class ProfileController extends Controller
             'instruments' => 'nullable|array',
             'widget_status' => 'nullable|array',
             'slug' => 'required|string|max:255|unique:profiles,slug,' . $profile->id,
-            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
             'theme' => 'nullable|string|in:kita-neon,cyber-purple,volt-orange,electric-red',
         ]);
 
@@ -198,5 +198,64 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Switch the active profile in the session.
+     */
+    public function switchProfile(Request $request, $id): RedirectResponse
+    {
+        $user = $request->user();
+        
+        // Ensure the profile belongs to the authenticated user
+        $profile = $user->profiles()->findOrFail($id);
+        
+        $request->session()->put('active_profile_id', $profile->id);
+        
+        return redirect()->back();
+    }
+
+    /**
+     * Show the profile creation form.
+     */
+    public function createArtist(Request $request): Response
+    {
+        return Inertia::render('Profile/ArtistCreate');
+    }
+
+    /**
+     * Store a newly created artist profile.
+     */
+    public function storeArtist(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'theme' => 'nullable|string|in:kita-neon,cyber-purple,volt-orange,electric-red',
+        ]);
+
+        $profile = $user->profiles()->create([
+            'name' => $request->input('name'),
+            'instruments' => [],
+            'coverage_area' => [],
+            'bio' => '',
+            'theme' => $request->input('theme', 'kita-neon'),
+            'slug' => Str::slug($request->input('name')) . '-' . uniqid(),
+            'widget_status' => [
+                'agenda' => true,
+                'media' => true,
+                'instagram' => '',
+                'spotify' => '',
+                'whatsapp' => '',
+                'facebook' => '',
+                'youtube' => ''
+            ],
+        ]);
+
+        // Automatically set the newly created profile as active
+        $request->session()->put('active_profile_id', $profile->id);
+
+        return Redirect::route('dashboard.tpv.edit')->with('success', '¡Perfil creado con éxito!');
     }
 }

@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('profiles', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->unique()->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name');
             $table->json('instruments')->nullable();
             $table->string('coverage_area')->nullable();
             $table->string('slug')->unique(); // Unique index is automatically created for unique columns
             $table->text('bio')->nullable();
+            $table->string('profile_photo_path')->nullable();
+            $table->string('avatar_path')->nullable();
+            $table->string('theme')->default('kita-neon');
             $table->json('widget_status')->nullable();
             $table->timestamps();
         });

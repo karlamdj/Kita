@@ -613,7 +613,7 @@ const downloadCardPng = async () => {
                                 type="button"
                                 @click="form.theme = 'kita-neon'"
                                 :class="[
-                                    'relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group',
+                                    'relative flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer group theme-kita-neon',
                                     form.theme === 'kita-neon'
                                         ? 'border-cyan-400 bg-cyan-500/10 shadow-[0_0_20px_rgba(34,211,238,0.2)]'
                                         : 'border-slate-800 bg-slate-950/40 hover:border-slate-700 hover:bg-slate-900/60'

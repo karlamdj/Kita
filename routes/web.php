@@ -18,6 +18,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile/switch/{id}', [ProfileController::class, 'switchProfile'])->name('profile.switch');
 
     // Dashboard Media Routes
     Route::get('/dashboard/medios', [MediaController::class, 'index'])->name('dashboard.media.index');
@@ -26,6 +27,8 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard TPV Routes
     Route::get('/dashboard/tpv', [ProfileController::class, 'showPreview'])->name('dashboard.tpv.show');
+    Route::get('/dashboard/tpv/crear', [ProfileController::class, 'createArtist'])->name('profile.create');
+    Route::post('/dashboard/tpv/crear', [ProfileController::class, 'storeArtist'])->name('profile.store');
     Route::get('/dashboard/tpv/editar', [ProfileController::class, 'editArtist'])->name('dashboard.tpv.edit');
     Route::put('/dashboard/tpv/editar', [ProfileController::class, 'updateArtist'])->name('dashboard.tpv.update');
 

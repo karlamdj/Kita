@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch, computed } from 'vue';
 import { router, Link, usePage, Head } from '@inertiajs/vue3';
+import Navbar from '@/Components/Navbar.vue';
 
 const props = defineProps({
     musicians: {
@@ -20,7 +21,6 @@ const authUser = pageProps.auth?.user;
 // Reactive state for filters
 const searchInput = ref(props.filters.search || '');
 const activeInstrument = ref(props.filters.instrument || '');
-const activeZone = ref(props.filters.zone || '');
 const selectedSort = ref('featured');
 
 // View layout state (grid or list)
@@ -40,7 +40,6 @@ const toggleFavorite = (id) => {
 
 // Static filter options
 const instrumentsList = ['Guitarrista', 'Baterista', 'Bajista', 'Vocalista', 'Banda Completa'];
-const zonesList = ['Centro', 'Zona Hotelera', 'Marina Vallarta', 'Nuevo Vallarta', 'Bucerías', 'Sayulita'];
 
 // Function to execute filtering
 const applyFilters = () => {
@@ -49,7 +48,6 @@ const applyFilters = () => {
         {
             search: searchInput.value,
             instrument: activeInstrument.value,
-            zone: activeZone.value,
         },
         {
             preserveState: true,
@@ -63,7 +61,6 @@ const applyFilters = () => {
 const clearFilters = () => {
     searchInput.value = '';
     activeInstrument.value = '';
-    activeZone.value = '';
     applyFilters();
 };
 
@@ -77,7 +74,7 @@ watch(searchInput, (value) => {
 });
 
 // Watch dropdown select elements to auto-submit filters
-watch([activeInstrument, activeZone], () => {
+watch(activeInstrument, () => {
     applyFilters();
 });
 
@@ -97,11 +94,6 @@ const getInitials = (name) => {
 const getMusicianPhoto = (musician) => {
     if (musician.profile_photo_path) {
         return '/' + musician.profile_photo_path;
-    }
-    // Fallback: search in media
-    const photos = musician.media?.filter(item => item.type === 'photo') || [];
-    if (photos.length > 0) {
-        return '/' + photos[0].path;
     }
     // Premium background image fallback representing live music
     return 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
@@ -153,66 +145,7 @@ const sortedMusicians = computed(() => {
         <div class="absolute bottom-[20%] left-[-10%] w-[45vw] h-[45vw] rounded-full bg-blue-600/5 blur-[140px] pointer-events-none z-0"></div>
 
         <!-- 1. Header & Navigation (Navbar) -->
-        <header class="border-b border-slate-900/60 sticky top-0 z-50 bg-[#050b14]/80 backdrop-blur-md">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex items-center justify-between h-20">
-                    <!-- Left Side: Logo & Subtitle -->
-                    <Link href="/" class="flex items-center gap-3 group select-none">
-                        <img src="/images/navbar.svg" alt="KITA Logo" class="h-10 w-auto" />
-                        <div class="flex items-baseline gap-2">
-                            <span class="text-2xl font-black tracking-wider text-white">
-                                KITA
-                            </span>
-                            <span class="text-[9px] font-bold tracking-[0.3em] text-slate-500 uppercase border-l border-slate-850 pl-2">
-                                TU MANAGER VIRTUAL
-                            </span>
-                        </div>
-                    </Link>
-
-                    <!-- Right Side: Flat Design Auth Buttons -->
-                    <div class="flex items-center gap-6">
-                        <template v-if="authUser">
-                            <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-slate-400">
-                                <Link href="/dashboard/tpv" class="hover:text-white transition-colors duration-200">
-                                    Mi TPV
-                                </Link>
-                                <Link href="/dashboard/medios" class="hover:text-white transition-colors duration-200">
-                                    Almacén
-                                </Link>
-                                <Link href="/dashboard/calendario" class="hover:text-white transition-colors duration-200">
-                                    Calendario
-                                </Link>
-                            </nav>
-                            <span class="text-xs text-slate-400 hidden sm:inline">
-                                Hola, <strong class="text-white font-bold">{{ authUser.name }}</strong>
-                            </span>
-                            <Link
-                                href="/logout"
-                                method="post"
-                                as="button"
-                                class="text-slate-400 hover:text-white text-xs font-semibold uppercase tracking-wider transition-colors duration-200 cursor-pointer"
-                            >
-                                Salir
-                            </Link>
-                        </template>
-                        <template v-else>
-                            <Link
-                                href="/login"
-                                class="text-slate-300 hover:text-white text-sm font-semibold transition-colors duration-200 px-2 py-1"
-                            >
-                                Iniciar Sesión
-                            </Link>
-                            <Link
-                                href="/register"
-                                class="bg-cyan-500 text-slate-950 hover:bg-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] font-bold text-sm px-5 py-2 rounded-lg transition-all duration-300 transform hover:scale-[1.02]"
-                            >
-                                Registrarse
-                            </Link>
-                        </template>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <Navbar />
 
         <!-- Main Wrapper -->
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-16 relative z-10">
@@ -292,7 +225,7 @@ const sortedMusicians = computed(() => {
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                     
                     <!-- Search input -->
-                    <div class="relative md:col-span-4">
+                    <div class="relative md:col-span-5">
                         <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -316,7 +249,7 @@ const sortedMusicians = computed(() => {
                     </div>
 
                     <!-- Instrument select -->
-                    <div class="md:col-span-3 relative">
+                    <div class="md:col-span-4 relative">
                         <select
                             v-model="activeInstrument"
                             class="appearance-none bg-[#050b14]/50 border border-slate-800/80 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 focus:outline-none rounded-xl text-slate-300 py-3 px-4 w-full text-sm cursor-pointer"
@@ -333,26 +266,10 @@ const sortedMusicians = computed(() => {
                         </span>
                     </div>
 
-                    <!-- Zone select -->
-                    <div class="md:col-span-3 relative">
-                        <select
-                            v-model="activeZone"
-                            class="appearance-none bg-[#050b14]/50 border border-slate-800/80 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 focus:outline-none rounded-xl text-slate-300 py-3 px-4 w-full text-sm cursor-pointer"
-                        >
-                            <option value="">Filtrar por zona</option>
-                            <option v-for="zone in zonesList" :key="zone" :value="zone">
-                                {{ zone }}
-                            </option>
-                        </select>
-                        <span class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-500">
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                            </svg>
-                        </span>
-                    </div>
+
 
                     <!-- Sort select -->
-                    <div class="md:col-span-2 relative">
+                    <div class="md:col-span-3 relative">
                         <select
                             v-model="selectedSort"
                             class="appearance-none bg-[#050b14]/50 border border-slate-800/80 focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 focus:outline-none rounded-xl text-slate-300 py-3 px-4 w-full text-sm cursor-pointer"
@@ -371,7 +288,7 @@ const sortedMusicians = computed(() => {
                 </div>
 
                 <!-- Clear Active Filters -->
-                <div v-if="activeInstrument || activeZone || searchInput" class="flex justify-end mt-4">
+                <div v-if="activeInstrument || searchInput" class="flex justify-end mt-4">
                     <button
                         @click="clearFilters"
                         class="text-xs font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors cursor-pointer"
@@ -460,10 +377,7 @@ const sortedMusicians = computed(() => {
                         />
                         <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none"></div>
                         
-                        <!-- Verified Badge -->
-                        <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0d1527]/80 backdrop-blur-md border border-cyan-500/20 text-cyan-400 text-[10px] font-black tracking-wider uppercase">
-                            <span class="text-xs">✓</span> VERIFICADO
-                        </span>
+
 
                         <!-- Favorites Heart Icon -->
                         <button
@@ -573,10 +487,7 @@ const sortedMusicians = computed(() => {
                             :alt="musician.name"
                             class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
                         />
-                        <!-- Verified Label -->
-                        <span class="absolute top-3 left-3 inline-flex items-center px-2 py-1 rounded bg-[#0d1527]/90 text-cyan-400 text-[9px] font-black tracking-wider uppercase">
-                            ✓ VERIFICADO
-                        </span>
+
                     </div>
 
                     <!-- Right Details Content -->

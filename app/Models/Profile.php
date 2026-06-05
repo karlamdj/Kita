@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'slug',
     'bio',
     'profile_photo_path',
+    'avatar_path',
     'widget_status',
     'theme',
 ])]
