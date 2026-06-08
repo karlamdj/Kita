@@ -139,4 +139,22 @@ class GoogleAuthenticationTest extends TestCase
         $response->assertSessionHasErrors('email');
         $this->assertGuest();
     }
+
+    public function test_google_redirect_returns_404_in_production(): void
+    {
+        $this->app['env'] = 'production';
+
+        $response = $this->get('/auth/google');
+
+        $response->assertStatus(404);
+    }
+
+    public function test_google_callback_returns_404_in_production(): void
+    {
+        $this->app['env'] = 'production';
+
+        $response = $this->get('/auth/google/callback');
+
+        $response->assertStatus(404);
+    }
 }

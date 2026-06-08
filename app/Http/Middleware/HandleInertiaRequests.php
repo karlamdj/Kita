@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                 'active_profile' => $activeProfile,
                 'profile_theme' => $activeProfile ? $activeProfile->theme : 'kita-neon',
             ],
+            'is_production' => app()->environment('production'),
         ];
     }
 }

@@ -200,7 +200,7 @@ const submit = () => {
                     </form>
 
                     <!-- Divider -->
-                    <div class="flex items-center gap-3 my-6">
+                    <div v-if="!$page.props.is_production" class="flex items-center gap-3 my-6">
                         <div class="h-[1px] bg-slate-800/80 flex-1"></div>
                         <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">o continúa con</span>
                         <div class="h-[1px] bg-slate-800/80 flex-1"></div>
@@ -208,6 +208,7 @@ const submit = () => {
 
                     <!-- Social Login Button (Google) -->
                     <a
+                        v-if="!$page.props.is_production"
                         href="/auth/google"
                         class="w-full relative flex items-center justify-center gap-3 bg-slate-950/40 backdrop-blur-md border border-cyan-500/30 text-cyan-400 hover:text-white rounded-xl py-3.5 px-4 transition-all duration-300 text-xs font-bold uppercase tracking-wider cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)] hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] hover:border-cyan-400"
                     >

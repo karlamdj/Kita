@@ -12,11 +12,12 @@ use Laravel\Socialite\Facades\Socialite;
 
 class GoogleController extends Controller
 {
-    /**
-     * Redirige al usuario a la página de autenticación de Google.
-     */
     public function redirectToGoogle(): RedirectResponse
     {
+        if (app()->environment('production')) {
+            abort(404);
+        }
+
         return Socialite::driver('google')->redirect();
     }
 
@@ -25,6 +26,10 @@ class GoogleController extends Controller
      */
     public function handleGoogleCallback(): RedirectResponse
     {
+        if (app()->environment('production')) {
+            abort(404);
+        }
+
         try {
             $googleUser = Socialite::driver('google')->user();
         } catch (\Exception $e) {
