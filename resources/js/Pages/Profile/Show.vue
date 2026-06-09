@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { Head, usePage, router } from '@inertiajs/vue3';
 import Navbar from '@/Components/Navbar.vue';
 
@@ -264,6 +264,76 @@ const platformIcon = (item) => {
 // ─── Media Lists ────────────────────────────────────────────────────────────────
 const photos = computed(() => props.profile.media?.filter(item => item.type === 'photo') || []);
 const upcomingEvents = computed(() => props.profile.events || []);
+
+// Carousel state for events
+const currentEventIndex = ref(0);
+
+// Calculate how many events to show per slide based on screen size
+const eventsPerSlide = ref(2); // Default for desktop
+
+// Update events per slide based on screen width
+const updateEventsPerSlide = () => {
+    if (typeof window !== 'undefined') {
+        eventsPerSlide.value = window.innerWidth < 768 ? 1 : 2; // 768px is Tailwind's 'md' breakpoint
+        // Reset to first slide when changing layout
+        currentEventIndex.value = 0;
+    }
+};
+
+// Setup resize listener
+onMounted(() => {
+    updateEventsPerSlide();
+    window.addEventListener('resize', updateEventsPerSlide);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('resize', updateEventsPerSlide);
+});
+
+// Create slides grouping events
+const eventSlides = computed(() => {
+    const slides = [];
+    const events = upcomingEvents.value;
+    const perSlide = eventsPerSlide.value;
+    
+    for (let i = 0; i < events.length; i += perSlide) {
+        slides.push(events.slice(i, i + perSlide));
+    }
+    
+    return slides;
+});
+
+// Calculate total slides
+const totalEventSlides = computed(() => {
+    return eventSlides.value.length;
+});
+
+// Get events for current slide (kept for compatibility but now using eventSlides)
+const visibleEvents = computed(() => {
+    return eventSlides.value[currentEventIndex.value] || [];
+});
+
+// Navigate carousel
+const nextEvents = () => {
+    if (currentEventIndex.value < totalEventSlides.value - 1) {
+        currentEventIndex.value++;
+    } else {
+        currentEventIndex.value = 0; // Loop back to start
+    }
+};
+
+const prevEvents = () => {
+    if (currentEventIndex.value > 0) {
+        currentEventIndex.value--;
+    } else {
+        currentEventIndex.value = totalEventSlides.value - 1; // Loop to end
+    }
+};
+
+// Go to specific slide
+const goToEventSlide = (index) => {
+    currentEventIndex.value = index;
+};
 
 // All media unified for the grid (photos + social videos)
 const allMedia = computed(() => props.profile.media?.filter(item => {
@@ -645,73 +715,124 @@ const toggleMusicPlay = () => {
                 <!-- WIDGETS RIGHT: Próximas Presentaciones — col-span-5, to the RIGHT of Music -->
                 <div class="grid grid-cols-1 gap-8 lg:col-span-5">
                     
-                    <!-- SHOWS WIDGET (Deep space glassmorphism) -->
+                    <!-- SHOWS WIDGET (Deep space glassmorphism with Carousel) -->
                     <section
                         v-if="profile.widget_status?.agenda !== false && upcomingEvents.length > 0"
                         :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 shadow-xl relative overflow-hidden group transition-all duration-300 border', tc.widget_card]"
                     >
-                        <div class="flex items-center gap-3 mb-6">
-                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
-                                Próximas Presentaciones
-                            </h3>
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                    Próximas Presentaciones
+                                </h3>
+                            </div>
+                            
+                            <!-- Carousel Navigation Arrows (only show if more than 2 events on desktop or more than 1 on mobile) -->
+                            <div v-if="totalEventSlides > 1" class="flex items-center gap-2">
+                                <button
+                                    @click="prevEvents"
+                                    :class="['p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-500/30 transition-all duration-300', tc.social_icon]"
+                                    aria-label="Eventos anteriores"
+                                >
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                    </svg>
+                                </button>
+                                <button
+                                    @click="nextEvents"
+                                    :class="['p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-500/30 transition-all duration-300', tc.social_icon]"
+                                    aria-label="Eventos siguientes"
+                                >
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Ticket-style List of Shows -->
-                        <div class="flex flex-col gap-4">
-                            <div
-                                v-for="event in upcomingEvents"
-                                :key="event.id"
-                                class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-950/80 border border-slate-850 p-4 rounded-2xl overflow-hidden group/gig hover:border-purple-500/30 transition-all duration-300"
+                        <!-- Carousel Container with slide transition -->
+                        <div class="relative overflow-hidden -mx-6 px-6">
+                            <div 
+                                class="flex transition-transform duration-500 ease-in-out"
+                                :style="{ transform: `translateX(calc(-${currentEventIndex * 100}%))` }"
                             >
-                                <!-- Date Badge (Concert ticket notch feel) -->
-                                <div :class="['bg-gradient-to-br text-white w-14 py-3 rounded-2xl shrink-0 flex flex-col items-center justify-center font-black leading-none text-center shadow-lg relative', tc.event_badge]">
-                                    <!-- Ticket notches -->
-                                    <div class="absolute top-1/2 -left-1.5 w-3 h-3 bg-slate-950 border-r border-slate-850 rounded-full shrink-0"></div>
-                                    <div class="absolute top-1/2 -right-1.5 w-3 h-3 bg-slate-950 border-l border-slate-850 rounded-full shrink-0"></div>
-                                    
-                                    <span class="text-[9px] uppercase font-bold text-white/80 tracking-wider">
-                                        {{ formatEventDate(event.start_time).split(' ')[1] }}
-                                    </span>
-                                    <span class="text-xl font-black mt-0.5">
-                                        {{ formatEventDate(event.start_time).split(' ')[0] }}
-                                    </span>
-                                </div>
+                                <div
+                                    v-for="(slideEvents, slideIndex) in eventSlides"
+                                    :key="`slide-${slideIndex}`"
+                                    class="w-full flex-shrink-0 flex flex-col gap-4 px-0"
+                                >
+                                    <div
+                                        v-for="event in slideEvents"
+                                        :key="event.id"
+                                        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-950/80 border border-slate-850 p-4 rounded-2xl overflow-hidden group/gig hover:border-purple-500/30 transition-all duration-300"
+                                    >
+                                        <!-- Date Badge (Concert ticket notch feel) -->
+                                        <div :class="['bg-gradient-to-br text-white w-14 py-3 rounded-2xl shrink-0 flex flex-col items-center justify-center font-black leading-none text-center shadow-lg relative', tc.event_badge]">
+                                            <!-- Ticket notches -->
+                                            <div class="absolute top-1/2 -left-1.5 w-3 h-3 bg-slate-950 border-r border-slate-850 rounded-full shrink-0"></div>
+                                            <div class="absolute top-1/2 -right-1.5 w-3 h-3 bg-slate-950 border-l border-slate-850 rounded-full shrink-0"></div>
+                                            
+                                            <span class="text-[9px] uppercase font-bold text-white/80 tracking-wider">
+                                                {{ formatEventDate(event.start_time).split(' ')[1] }}
+                                            </span>
+                                            <span class="text-xl font-black mt-0.5">
+                                                {{ formatEventDate(event.start_time).split(' ')[0] }}
+                                            </span>
+                                        </div>
 
-                                <!-- Gigs Details -->
-                                <div class="min-w-0 flex-1">
-                                    <h4 class="text-base font-extrabold text-white leading-tight truncate group-hover/gig:text-purple-300 transition-colors">
-                                        {{ event.title }}
-                                    </h4>
-                                    
-                                    <div class="flex flex-wrap items-center gap-3 mt-1.5">
-                                        <p class="text-xs text-slate-400 truncate flex items-center gap-1">
-                                            <svg class="h-3.5 w-3.5 text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                            {{ event.location }}
-                                        </p>
-                                        <p class="text-xs text-slate-500 font-semibold flex items-center gap-1">
-                                            <svg class="h-3.5 w-3.5 text-pink-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                            </svg>
-                                            {{ formatEventTime(event.start_time) }}
-                                        </p>
+                                        <!-- Gigs Details -->
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="text-base font-extrabold text-white leading-tight truncate group-hover/gig:text-purple-300 transition-colors">
+                                                {{ event.title }}
+                                            </h4>
+                                            
+                                            <div class="flex flex-wrap items-center gap-3 mt-1.5">
+                                                <p class="text-xs text-slate-400 truncate flex items-center gap-1">
+                                                    <svg class="h-3.5 w-3.5 text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    </svg>
+                                                    {{ event.location }}
+                                                </p>
+                                                <p class="text-xs text-slate-500 font-semibold flex items-center gap-1">
+                                                    <svg class="h-3.5 w-3.5 text-pink-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                    {{ formatEventTime(event.start_time) }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Action redirection (Ticket Redirection CTA) -->
+                                        <div class="w-full sm:w-auto flex justify-end shrink-0">
+                                            <a
+                                                :href="getWhatsAppUrl(event.title)"
+                                                target="_blank"
+                                                :class="['bg-slate-900 border border-slate-800 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer shadow-md select-none w-full sm:w-auto text-center', tc.event_cta]"
+                                            >
+                                                Adquirir Accesos
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <!-- Action redirection (Ticket Redirection CTA) -->
-                                <div class="w-full sm:w-auto flex justify-end shrink-0">
-                                    <a
-                                        :href="getWhatsAppUrl(event.title)"
-                                        target="_blank"
-                                        :class="['bg-slate-900 border border-slate-800 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer shadow-md select-none w-full sm:w-auto text-center', tc.event_cta]"
-                                    >
-                                        Adquirir Accesos
-                                    </a>
-                                </div>
                             </div>
+                        </div>
+
+                        <!-- Carousel Indicators (dots) -->
+                        <div v-if="totalEventSlides > 1" class="flex items-center justify-center gap-2 mt-6">
+                            <button
+                                v-for="(slide, index) in totalEventSlides"
+                                :key="`dot-${index}`"
+                                @click="goToEventSlide(index)"
+                                :class="[
+                                    'transition-all duration-300 rounded-full',
+                                    currentEventIndex === index 
+                                        ? 'w-8 h-2 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]' 
+                                        : 'w-2 h-2 bg-slate-700 hover:bg-slate-600'
+                                ]"
+                                :aria-label="`Ir a eventos ${index + 1}`"
+                            ></button>
                         </div>
                     </section>
                 </div>
