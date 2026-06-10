@@ -13,6 +13,7 @@ const form = useForm({
 
 const showPassword = ref(false);
 const showConfirmPassword = ref(false);
+const accepted = ref(false);
 
 const submit = () => {
     form.post(route('register'), {
@@ -214,13 +215,31 @@ const submit = () => {
                                 <InputError class="mt-1" :message="form.errors.password_confirmation" />
                             </div>
 
+                            <!-- Checkbox de Aceptación de Términos y Privacidad -->
+                            <div class="flex items-start gap-2.5 mt-2 mb-2">
+                                <input
+                                    id="terms"
+                                    type="checkbox"
+                                    v-model="accepted"
+                                    class="mt-0.5 h-4.5 w-4.5 rounded-lg border-slate-800 bg-slate-950/50 text-cyan-500 focus:ring-cyan-500/20 focus:ring-1 focus:ring-offset-0 focus:outline-none transition-all duration-300 cursor-pointer shrink-0"
+                                    required
+                                />
+                                <label for="terms" class="text-xs text-slate-450 leading-normal select-none">
+                                    He leído y acepto los 
+                                    <Link :href="route('terms')" class="text-cyan-400 hover:text-cyan-300 font-bold hover:underline transition-colors">Términos y Condiciones</Link> 
+                                    y el 
+                                    <Link :href="route('privacy')" class="text-cyan-400 hover:text-cyan-300 font-bold hover:underline transition-colors">Aviso de Privacidad</Link> 
+                                    de KITA.
+                                </label>
+                            </div>
+
                             <!-- Primary Register Button -->
                             <button
                                 type="submit"
-                                :disabled="form.processing"
+                                :disabled="form.processing || !accepted"
                                 :class="[
                                     'w-full bg-gradient-to-r from-cyan-400 to-cyan-500 text-slate-950 font-black text-xs tracking-wider uppercase py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all duration-300 shadow-[0_0_20px_rgba(6,182,212,0.15)] hover:shadow-[0_0_30px_rgba(6,182,212,0.25)] cursor-pointer group mt-2',
-                                    { 'opacity-50 pointer-events-none': form.processing }
+                                    { 'opacity-50 pointer-events-none': form.processing || !accepted }
                                 ]"
                             >
                                 <span>Crear Cuenta</span>

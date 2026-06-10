@@ -10,6 +10,14 @@ use Inertia\Inertia;
 
 Route::get('/', [PublicProfileController::class, 'index'])->name('home');
 
+Route::get('/terminos-y-condiciones', function () {
+    return Inertia::render('TermsAndConditions');
+})->name('terms');
+
+Route::get('/politica-de-privacidad', function () {
+    return Inertia::render('PrivacyPolicy');
+})->name('privacy');
+
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
