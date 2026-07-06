@@ -21,7 +21,12 @@ import { Head } from '@inertiajs/vue3';
                     class="overflow-hidden bg-white shadow-sm sm:rounded-lg dark:bg-gray-800"
                 >
                     <div class="p-6 text-gray-900 dark:text-gray-100">
-                        You're logged in!
+                        <span v-if="$page.props.flash?.success">
+                            {{ $page.props.flash.success }}
+                        </span>
+                        <span v-else>
+                            You're logged in!
+                        </span>
                     </div>
                 </div>
             </div>

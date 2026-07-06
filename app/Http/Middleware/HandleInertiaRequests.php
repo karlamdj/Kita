@@ -52,6 +52,10 @@ class HandleInertiaRequests extends Middleware
                 'active_profile' => $activeProfile,
                 'profile_theme' => $activeProfile ? $activeProfile->theme : 'kita-neon',
             ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+                'error' => fn () => $request->session()->get('error'),
+            ],
             'is_production' => app()->environment('production'),
         ];
     }

@@ -99,6 +99,7 @@ class ProfileController extends Controller
 
         return Inertia::render('Profile/ArtistEdit', [
             'profile' => $profile,
+            'is_main_profile' => $profile->id === $user->profiles()->orderBy('id', 'asc')->first()->id,
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
         ]);
@@ -184,11 +185,25 @@ class ProfileController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validate([
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
+
+        if ($user->google_id) {
+            $request->validate([
+                'account_email_confirmation' => [
+                    'required',
+                    'string',
+                    function ($attribute, $value, $fail) use ($user) {
+                        if ($value !== $user->email) {
+                            $fail('El correo electrónico introducido no coincide con tu correo de cuenta.');
+                        }
+                    }
+                ],
+            ]);
+        } else {
+            $request->validate([
+                'password' => ['required', 'current_password'],
+            ]);
+        }
 
         Auth::logout();
 
@@ -198,6 +213,59 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    /**
+     * Delete a specific artist profile.
+     */
+    public function destroyArtist(Request $request, $id): RedirectResponse
+    {
+        $user = $request->user();
+        $profile = $user->profiles()->findOrFail($id);
+
+        if ($user->google_id) {
+            $request->validate([
+                'profile_name_confirmation' => [
+                    'required',
+                    'string',
+                    function ($attribute, $value, $fail) use ($profile) {
+                        if ($value !== $profile->name) {
+                            $fail('El nombre del perfil introducido no coincide con el nombre de tu perfil.');
+                        }
+                    }
+                ],
+            ]);
+        } else {
+            $request->validate([
+                'password' => ['required', 'current_password'],
+            ]);
+        }
+
+        // Delete profile photo from storage if exists
+        if ($profile->profile_photo_path) {
+            $filePath = str_replace('storage/', '', $profile->profile_photo_path);
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($filePath)) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($filePath);
+            }
+        }
+
+        // Delete associated local media files
+        foreach ($profile->media as $mediaItem) {
+            if ($mediaItem->path) {
+                if (\Illuminate\Support\Facades\Storage::disk('public')->exists($mediaItem->path)) {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($mediaItem->path);
+                }
+            }
+        }
+
+        // Clean up active profile in session if it is being deleted
+        if ($request->session()->get('active_profile_id') == $profile->id) {
+            $request->session()->forget('active_profile_id');
+        }
+
+        $profile->delete();
+
+        return Redirect::route('dashboard')->with('success', 'El perfil artístico se ha eliminado correctamente.');
     }
 
     /**

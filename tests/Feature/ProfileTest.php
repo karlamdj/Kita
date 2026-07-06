@@ -96,4 +96,46 @@ class ProfileTest extends TestCase
 
         $this->assertNotNull($user->fresh());
     }
+
+    public function test_google_user_can_delete_account_confirming_email(): void
+    {
+        $user = User::factory()->create([
+            'google_id' => 'google-oauth-12345',
+            'email' => 'google-user@example.com',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->delete('/profile', [
+                'account_email_confirmation' => 'google-user@example.com',
+            ]);
+
+        $response
+            ->assertSessionHasNoErrors()
+            ->assertRedirect('/');
+
+        $this->assertGuest();
+        $this->assertNull($user->fresh());
+    }
+
+    public function test_google_user_cannot_delete_account_with_incorrect_email(): void
+    {
+        $user = User::factory()->create([
+            'google_id' => 'google-oauth-12345',
+            'email' => 'google-user@example.com',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->from('/profile')
+            ->delete('/profile', [
+                'account_email_confirmation' => 'wrong-email@example.com',
+            ]);
+
+        $response
+            ->assertSessionHasErrors('account_email_confirmation')
+            ->assertRedirect('/profile');
+
+        $this->assertNotNull($user->fresh());
+    }
 }

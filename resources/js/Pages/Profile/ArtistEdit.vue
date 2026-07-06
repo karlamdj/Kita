@@ -4,11 +4,21 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
 import QrcodeVue from 'qrcode.vue';
 import html2canvas from 'html2canvas';
+import DangerButton from '@/Components/DangerButton.vue';
+import InputError from '@/Components/InputError.vue';
+import InputLabel from '@/Components/InputLabel.vue';
+import Modal from '@/Components/Modal.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
+import TextInput from '@/Components/TextInput.vue';
 
 const props = defineProps({
     profile: {
         type: Object,
         required: true,
+    },
+    is_main_profile: {
+        type: Boolean,
+        default: false,
     },
 });
 
@@ -274,6 +284,64 @@ const downloadCardPng = async () => {
     } finally {
         isDownloading.value = false;
     }
+};
+
+// Logica para eliminar el perfil con contraseña / confirmacion por nombre
+const confirmingProfileDeletion = ref(false);
+const confirmInput = ref(null);
+
+const deleteForm = useForm({
+    password: '',
+    profile_name_confirmation: '',
+});
+
+const confirmProfileDeletion = () => {
+    confirmingProfileDeletion.value = true;
+    nextTick(() => confirmInput.value.focus());
+};
+
+const deleteProfile = () => {
+    deleteForm.delete(route('profile.destroy-artist', props.profile.id), {
+        preserveScroll: true,
+        onSuccess: () => closeModal(),
+        onError: () => confirmInput.value.focus(),
+        onFinish: () => deleteForm.reset(),
+    });
+};
+
+const closeModal = () => {
+    confirmingProfileDeletion.value = false;
+    deleteForm.clearErrors();
+    deleteForm.reset();
+};
+
+// Logica para eliminar la cuenta entera (solo si es el perfil principal)
+const confirmingAccountDeletion = ref(false);
+const confirmAccountInput = ref(null);
+
+const deleteAccountForm = useForm({
+    password: '',
+    account_email_confirmation: '',
+});
+
+const confirmAccountDeletion = () => {
+    confirmingAccountDeletion.value = true;
+    nextTick(() => confirmAccountInput.value.focus());
+};
+
+const deleteAccount = () => {
+    deleteAccountForm.delete(route('profile.destroy'), {
+        preserveScroll: true,
+        onSuccess: () => closeAccountModal(),
+        onError: () => confirmAccountInput.value.focus(),
+        onFinish: () => deleteAccountForm.reset(),
+    });
+};
+
+const closeAccountModal = () => {
+    confirmingAccountDeletion.value = false;
+    deleteAccountForm.clearErrors();
+    deleteAccountForm.reset();
 };
 </script>
 
@@ -744,6 +812,167 @@ const downloadCardPng = async () => {
                     </button>
 
                 </form>
+
+                <!-- Zona de Peligro (Eliminar Perfil / Cuenta) -->
+                <div class="mt-12 border-t border-red-500/20 pt-8">
+                    <div class="bg-red-950/20 border border-red-500/30 rounded-2xl p-6 md:p-8 backdrop-blur-sm">
+                        <h3 class="text-lg font-bold text-red-500 flex items-center gap-2">
+                            <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Zona de Peligro
+                        </h3>
+                        <p class="text-sm text-slate-400 mt-2 mb-6">
+                            Una vez que elimines este perfil artístico, todas las imágenes de tu galería, tus eventos y configuraciones serán permanentemente borrados. Esta acción no se puede deshacer.
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-4">
+                            <DangerButton @click="confirmProfileDeletion" class="font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-transform duration-300">
+                                Eliminar Perfil Artístico
+                            </DangerButton>
+
+                            <DangerButton v-if="is_main_profile" @click="confirmAccountDeletion" class="font-bold py-3 px-6 rounded-xl hover:scale-[1.02] transition-transform duration-300 bg-red-800 hover:bg-red-700 text-white border-transparent">
+                                Eliminar Mi Cuenta de Usuario
+                            </DangerButton>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal de Confirmación de Borrado de Perfil -->
+                <Modal :show="confirmingProfileDeletion" @close="closeModal">
+                    <div class="p-6 bg-slate-900 text-slate-100 border border-slate-800 rounded-2xl">
+                        <h2 class="text-lg font-bold text-slate-200">
+                            ¿Estás seguro de que deseas eliminar este perfil?
+                        </h2>
+
+                        <p class="mt-2 text-sm text-slate-400">
+                            Una vez que elimines tu perfil de <strong>{{ profile.name }}</strong>, no se podrá recuperar la información.
+                        </p>
+
+                        <!-- Si el usuario inició sesión con Google -->
+                        <div v-if="$page.props.auth.user.google_id" class="mt-6">
+                            <p class="text-sm text-slate-400 mb-3">
+                                Como iniciaste sesión con Google, escribe exactamente el nombre del perfil (<strong>{{ profile.name }}</strong>) para confirmar la eliminación:
+                            </p>
+
+                            <TextInput
+                                id="profile_name_confirmation"
+                                ref="confirmInput"
+                                v-model="deleteForm.profile_name_confirmation"
+                                type="text"
+                                class="mt-1 block w-3/4 bg-slate-950 border-slate-800 text-slate-100 focus:border-red-500 focus:ring-red-500"
+                                placeholder="Nombre del perfil"
+                                @keyup.enter="deleteProfile"
+                            />
+
+                            <InputError :message="deleteForm.errors.profile_name_confirmation" class="mt-2 text-red-400 text-xs" />
+                        </div>
+
+                        <!-- Si es un usuario normal -->
+                        <div v-else class="mt-6">
+                            <p class="text-sm text-slate-400 mb-3">
+                                Por favor, introduce tu contraseña para confirmar esta acción.
+                            </p>
+
+                            <InputLabel for="delete_profile_password" value="Contraseña de Usuario" class="sr-only text-slate-400" />
+
+                            <TextInput
+                                id="delete_profile_password"
+                                ref="confirmInput"
+                                v-model="deleteForm.password"
+                                type="password"
+                                class="mt-1 block w-3/4 bg-slate-950 border-slate-800 text-slate-100 focus:border-red-500 focus:ring-red-500"
+                                placeholder="Contraseña de Usuario"
+                                @keyup.enter="deleteProfile"
+                            />
+
+                            <InputError :message="deleteForm.errors.password" class="mt-2 text-red-400 text-xs" />
+                        </div>
+
+                        <div class="mt-6 flex justify-end gap-3">
+                            <SecondaryButton @click="closeModal" class="border border-slate-700 text-slate-300 hover:bg-slate-800">
+                                Cancelar
+                            </SecondaryButton>
+
+                            <DangerButton
+                                :class="{ 'opacity-25': deleteForm.processing }"
+                                :disabled="deleteForm.processing"
+                                @click="deleteProfile"
+                                class="font-bold"
+                            >
+                                Confirmar Eliminación
+                            </DangerButton>
+                        </div>
+                    </div>
+                </Modal>
+
+                <!-- Modal de Confirmación de Borrado de Cuenta -->
+                <Modal :show="confirmingAccountDeletion" @close="closeAccountModal">
+                    <div class="p-6 bg-slate-900 text-slate-100 border border-slate-800 rounded-2xl">
+                        <h2 class="text-lg font-bold text-slate-200">
+                            ¿Estás seguro de que deseas eliminar tu CUENTA de usuario?
+                        </h2>
+
+                        <p class="mt-2 text-sm text-slate-400">
+                            Al eliminar tu cuenta, se borrarán todos tus perfiles asociados, galería de fotos, eventos y datos de manera irreversible.
+                        </p>
+
+                        <!-- Si el usuario inició sesión con Google -->
+                        <div v-if="$page.props.auth.user.google_id" class="mt-6">
+                            <p class="text-sm text-slate-400 mb-3">
+                                Como iniciaste sesión con Google, escribe exactamente tu correo de cuenta (<strong>{{ $page.props.auth.user.email }}</strong>) para confirmar la eliminación de la cuenta entera:
+                            </p>
+
+                            <TextInput
+                                id="account_email_confirmation"
+                                ref="confirmAccountInput"
+                                v-model="deleteAccountForm.account_email_confirmation"
+                                type="text"
+                                class="mt-1 block w-3/4 bg-slate-950 border-slate-800 text-slate-100 focus:border-red-500 focus:ring-red-500"
+                                placeholder="Correo electrónico de tu cuenta"
+                                @keyup.enter="deleteAccount"
+                            />
+
+                            <InputError :message="deleteAccountForm.errors.account_email_confirmation" class="mt-2 text-red-400 text-xs" />
+                        </div>
+
+                        <!-- Si es un usuario normal -->
+                        <div v-else class="mt-6">
+                            <p class="text-sm text-slate-400 mb-3">
+                                Por favor, introduce tu contraseña para confirmar la eliminación de tu cuenta.
+                            </p>
+
+                            <InputLabel for="delete_account_password" value="Contraseña de Usuario" class="sr-only text-slate-400" />
+
+                            <TextInput
+                                id="delete_account_password"
+                                ref="confirmAccountInput"
+                                v-model="deleteAccountForm.password"
+                                type="password"
+                                class="mt-1 block w-3/4 bg-slate-950 border-slate-800 text-slate-100 focus:border-red-500 focus:ring-red-500"
+                                placeholder="Contraseña de Usuario"
+                                @keyup.enter="deleteAccount"
+                            />
+
+                            <InputError :message="deleteAccountForm.errors.password" class="mt-2 text-red-400 text-xs" />
+                        </div>
+
+                        <div class="mt-6 flex justify-end gap-3">
+                            <SecondaryButton @click="closeAccountModal" class="border border-slate-700 text-slate-300 hover:bg-slate-800">
+                                Cancelar
+                            </SecondaryButton>
+
+                            <DangerButton
+                                :class="{ 'opacity-25': deleteAccountForm.processing }"
+                                :disabled="deleteAccountForm.processing"
+                                @click="deleteAccount"
+                                class="font-bold"
+                            >
+                                Confirmar Borrado de Cuenta
+                            </DangerButton>
+                        </div>
+                    </div>
+                </Modal>
 
             </div>
         </div>

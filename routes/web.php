@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/dashboard/tpv/{id}', [ProfileController::class, 'destroyArtist'])->name('profile.destroy-artist');
     Route::post('/profile/switch/{id}', [ProfileController::class, 'switchProfile'])->name('profile.switch');
 
     // Dashboard Media Routes
