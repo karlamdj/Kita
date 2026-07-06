@@ -75,6 +75,26 @@ const toggleInstrument = (inst) => {
     }
 };
 
+// Custom instrument inputs
+const showCustomInstrumentInput = ref(false);
+const customInstrumentText = ref('');
+
+const addCustomInstrument = () => {
+    const value = customInstrumentText.value.trim();
+    if (value) {
+        // If it matches a common instrument (case-insensitive), use the common instrument name
+        const matchedCommon = commonInstruments.find(
+            (inst) => inst.toLowerCase() === value.toLowerCase()
+        );
+        const finalValue = matchedCommon || value;
+        if (!form.instruments.includes(finalValue)) {
+            form.instruments.push(finalValue);
+        }
+        customInstrumentText.value = '';
+        showCustomInstrumentInput.value = false;
+    }
+};
+
 // Handle sluggify on input
 const onSlugInput = (e) => {
     form.slug = e.target.value
@@ -477,6 +497,55 @@ const downloadCardPng = async () => {
                                 ]"
                             >
                                 {{ inst }}
+                            </button>
+
+                            <!-- Custom Instruments (selected, not in commonInstruments) -->
+                            <template v-for="inst in form.instruments" :key="'custom-' + inst">
+                                <button
+                                    v-if="!commonInstruments.includes(inst)"
+                                    type="button"
+                                    @click="toggleInstrument(inst)"
+                                    :class="[
+                                        'px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-300 border cursor-pointer select-none flex items-center gap-1.5',
+                                        qrTheme.activePill + ' font-bold scale-[1.02]'
+                                    ]"
+                                >
+                                    <span>{{ inst }}</span>
+                                    <span class="text-[10px] opacity-75 font-black">✕</span>
+                                </button>
+                            </template>
+
+                            <!-- Option for other custom instruments -->
+                            <button
+                                type="button"
+                                @click="showCustomInstrumentInput = !showCustomInstrumentInput"
+                                :class="[
+                                    'px-4 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-300 border cursor-pointer select-none flex items-center gap-1.5',
+                                    showCustomInstrumentInput
+                                        ? 'bg-slate-800 text-white border-slate-650'
+                                        : 'bg-slate-950 text-slate-400 border-slate-850 hover:border-slate-700 hover:text-slate-200'
+                                ]"
+                            >
+                                <span>➕ Otro</span>
+                            </button>
+                        </div>
+
+                        <!-- Custom instrument text field -->
+                        <div v-if="showCustomInstrumentInput" class="mt-4 flex gap-2 max-w-sm">
+                            <input
+                                v-model="customInstrumentText"
+                                type="text"
+                                @keydown.enter.prevent="addCustomInstrument"
+                                placeholder="Ej: Violinista, Saxofonista, DJ..."
+                                :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2 px-3 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
+                                autofocus
+                            />
+                            <button
+                                type="button"
+                                @click="addCustomInstrument"
+                                :class="['px-4 py-2 rounded-lg text-xs font-black transition-all duration-300 text-slate-950 cursor-pointer whitespace-nowrap', qrTheme.btnSave]"
+                            >
+                                Agregar
                             </button>
                         </div>
                         <span v-if="form.errors.instruments" class="text-xs text-red-400 mt-2 block">{{ form.errors.instruments }}</span>

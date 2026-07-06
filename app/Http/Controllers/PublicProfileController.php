@@ -38,9 +38,21 @@ class PublicProfileController extends Controller
 
         $musicians = $query->orderBy('name')->get();
 
+        $defaultInstruments = ['Guitarrista', 'Baterista', 'Bajista', 'Vocalista', 'Banda Completa', 'Tecladista', 'Percusionista'];
+        $dbInstruments = Profile::whereNotNull('instruments')
+            ->pluck('instruments')
+            ->flatten()
+            ->unique()
+            ->filter()
+            ->values()
+            ->toArray();
+        $instrumentsList = array_unique(array_merge($defaultInstruments, $dbInstruments));
+        sort($instrumentsList);
+
         return Inertia::render('Home', [
             'musicians' => $musicians,
             'filters' => $request->only(['search', 'instrument', 'zone']),
+            'instrumentsList' => $instrumentsList,
         ]);
     }
 }

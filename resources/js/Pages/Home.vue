@@ -12,6 +12,10 @@ const props = defineProps({
         type: Object,
         default: () => ({ search: '', instrument: '', zone: '' }),
     },
+    instrumentsList: {
+        type: Array,
+        default: () => ['Guitarrista', 'Baterista', 'Bajista', 'Vocalista', 'Banda Completa', 'Tecladista', 'Percusionista'],
+    },
 });
 
 // Access auth state globally
@@ -38,8 +42,8 @@ const toggleFavorite = (id) => {
     localStorage.setItem('kita_favorites', JSON.stringify(favorites.value));
 };
 
-// Static filter options
-const instrumentsList = ['Guitarrista', 'Baterista', 'Bajista', 'Vocalista', 'Banda Completa'];
+// Dynamic filter options
+const instrumentsList = computed(() => props.instrumentsList);
 
 // Function to execute filtering
 const applyFilters = () => {
