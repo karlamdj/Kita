@@ -9,6 +9,7 @@ const form = useForm({
     email: '',
     password: '',
     password_confirmation: '',
+    extra_phone: '',
 });
 
 const showPassword = ref(false);
@@ -113,6 +114,19 @@ const submit = () => {
                                     />
                                 </div>
                                 <InputError class="mt-1" :message="form.errors.name" />
+                            </div>
+
+                            <!-- Honeypot Field (trap for bots) -->
+                            <div style="display: none !important;" class="hidden pointer-events-none">
+                                <label for="extra_phone">Teléfono Alternativo</label>
+                                <input
+                                    id="extra_phone"
+                                    type="text"
+                                    name="extra_phone"
+                                    v-model="form.extra_phone"
+                                    autocomplete="off"
+                                    tabindex="-1"
+                                />
                             </div>
 
                             <!-- Email Input -->

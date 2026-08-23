@@ -22,10 +22,7 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/dashboard/tpv/{id}', [ProfileController::class, 'destroyArtist'])->name('profile.destroy-artist');
     Route::post('/profile/switch/{id}', [ProfileController::class, 'switchProfile'])->name('profile.switch');
 
@@ -45,6 +42,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/calendario', [EventController::class, 'index'])->name('dashboard.calendar.index');
     Route::post('/dashboard/calendario/eventos', [EventController::class, 'store'])->name('dashboard.calendar.store');
     Route::delete('/dashboard/calendario/eventos/{id}', [EventController::class, 'destroy'])->name('dashboard.calendar.destroy');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__.'/auth.php';
