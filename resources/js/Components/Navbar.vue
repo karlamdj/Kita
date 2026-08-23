@@ -154,7 +154,7 @@ if (typeof window !== 'undefined') {
                             >
                                 {{ getInitials(activeProfile.name) }}
                             </div>
-                            <span class="text-xs font-bold text-slate-200 max-w-[120px] truncate group-hover:text-white transition-colors">
+                            <span class="hidden md:inline-block text-xs font-bold text-slate-200 max-w-[120px] truncate group-hover:text-white transition-colors">
                                 {{ activeProfile.name }}
                             </span>
                             <!-- Chevron icon -->
@@ -276,15 +276,26 @@ if (typeof window !== 'undefined') {
                 </template>
                 <template v-else>
                     <!-- Guest Options -->
+                    <!-- Desktop "Iniciar Sesión" (hidden on mobile, visible on desktop) -->
                     <Link
                         href="/login"
-                        class="text-slate-400 hover:text-white px-3 py-2 text-sm font-semibold transition-colors duration-200"
+                        class="hidden md:inline-block text-slate-400 hover:text-white px-3 py-2 text-sm font-semibold transition-colors duration-200"
                     >
                         Iniciar Sesión
                     </Link>
+
+                    <!-- Mobile "Iniciar Sesión" (styled like "Registrarse" button, visible only on mobile) -->
+                    <Link
+                        href="/login"
+                        class="md:hidden border border-cyan-500/50 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] text-cyan-400 hover:text-white px-4 py-2 rounded-full transition-all duration-300 text-sm font-semibold hover:scale-105"
+                    >
+                        Iniciar Sesión
+                    </Link>
+
+                    <!-- "Registrarse" (hidden on mobile, visible on desktop) -->
                     <Link
                         href="/register"
-                        class="border border-cyan-500/50 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] text-cyan-400 hover:text-white px-4 py-2 rounded-full transition-all duration-300 text-sm font-semibold hover:scale-105"
+                        class="hidden md:inline-block border border-cyan-500/50 hover:border-cyan-400 hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] text-cyan-400 hover:text-white px-4 py-2 rounded-full transition-all duration-300 text-sm font-semibold hover:scale-105"
                     >
                         Registrarse
                     </Link>

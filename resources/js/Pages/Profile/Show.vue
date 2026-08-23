@@ -490,6 +490,17 @@ const toggleMusicPlay = () => {
                         >
                             {{ inst }}
                         </span>
+
+                        <!-- Genres / Music Styles Tags -->
+                        <template v-if="profile.genres && profile.genres.length > 0">
+                            <span
+                                v-for="genre in profile.genres"
+                                :key="genre"
+                                :class="['px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
+                            >
+                                🎸 {{ genre }}
+                            </span>
+                        </template>
                         
                         <template v-if="Array.isArray(profile.coverage_area)">
                             <span
