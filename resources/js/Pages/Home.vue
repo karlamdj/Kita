@@ -12,6 +12,10 @@ const props = defineProps({
         type: Object,
         default: () => ({ search: '', instrument: '', zone: '' }),
     },
+    instrumentsList: {
+        type: Array,
+        default: () => ['Guitarrista', 'Baterista', 'Bajista', 'Vocalista', 'Banda Completa', 'Tecladista', 'Percusionista'],
+    },
 });
 
 // Access auth state globally
@@ -38,8 +42,8 @@ const toggleFavorite = (id) => {
     localStorage.setItem('kita_favorites', JSON.stringify(favorites.value));
 };
 
-// Static filter options
-const instrumentsList = ['Guitarrista', 'Baterista', 'Bajista', 'Vocalista', 'Banda Completa'];
+// Dynamic filter options
+const instrumentsList = computed(() => props.instrumentsList);
 
 // Function to execute filtering
 const applyFilters = () => {
@@ -101,6 +105,14 @@ const getMusicianPhoto = (musician) => {
 
 // Helper to resolve dynamic aesthetic pills for each musician
 const getMusicianTags = (musician) => {
+    // If genres are set, show them as priority tags
+    if (musician.genres && musician.genres.length > 0) {
+        return {
+            display: musician.genres.slice(0, 4),
+            extra: musician.genres.length > 4 ? musician.genres.length - 4 : 0
+        };
+    }
+
     const rawTags = [...(musician.instruments || [])];
     // Use second instrument and beyond as tags
     const otherTags = rawTags.slice(1);

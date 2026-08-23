@@ -47,6 +47,7 @@ class ProfileController extends Controller
             $profile = $user->profile()->create([
                 'name' => $user->name,
                 'slug' => Str::slug($user->name) . '-' . uniqid(),
+                'genres' => [],
                 'widget_status' => [
                     'agenda' => true,
                     'media' => true,
@@ -85,6 +86,7 @@ class ProfileController extends Controller
             $profile = $user->profile()->create([
                 'name' => $user->name,
                 'slug' => Str::slug($user->name) . '-' . uniqid(),
+                'genres' => [],
                 'widget_status' => [
                     'agenda' => true,
                     'media' => true,
@@ -118,6 +120,7 @@ class ProfileController extends Controller
             'bio' => 'nullable|string',
             'coverage_area' => 'nullable|array',
             'instruments' => 'nullable|array',
+            'genres' => 'nullable|array',
             'widget_status' => 'nullable|array',
             'slug' => 'required|string|max:255|unique:profiles,slug,' . $profile->id,
             'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:20480',
@@ -129,6 +132,7 @@ class ProfileController extends Controller
             'bio' => $request->input('bio'),
             'coverage_area' => $request->input('coverage_area') ?? [],
             'instruments' => $request->input('instruments') ?? [],
+            'genres' => $request->input('genres') ?? [],
             'widget_status' => $request->input('widget_status') ?? [],
             'slug' => Str::slug($request->input('slug')),
             'theme' => $request->input('theme', 'kita-neon'),
@@ -306,6 +310,7 @@ class ProfileController extends Controller
         $profile = $user->profiles()->create([
             'name' => $request->input('name'),
             'instruments' => [],
+            'genres' => [],
             'coverage_area' => [],
             'bio' => '',
             'theme' => $request->input('theme', 'kita-neon'),

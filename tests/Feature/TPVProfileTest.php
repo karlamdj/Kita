@@ -192,5 +192,46 @@ class TPVProfileTest extends TestCase
 
         Storage::disk('public')->assertExists('profiles/avatar.jpg');
     }
+
+    public function test_tpv_profile_can_be_updated_with_custom_instrument_and_filters_correctly(): void
+    {
+        $user = User::factory()->create();
+        
+        $profile = $user->profiles()->create([
+            'name' => 'John Custom',
+            'slug' => 'john-custom',
+            'widget_status' => ['agenda' => true, 'media' => true],
+            'theme' => 'kita-neon',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->put('/dashboard/tpv/editar', [
+                'name' => 'John Custom',
+                'slug' => 'john-custom',
+                'bio' => 'Custom player',
+                'theme' => 'kita-neon',
+                'coverage_area' => ['Bucerías'],
+                'instruments' => ['Guitarrista', 'Violinista'],
+                'widget_status' => ['agenda' => true, 'media' => true],
+            ]);
+
+        $response->assertSessionHasNoErrors();
+        $profile->refresh();
+
+        $this->assertEquals(['Guitarrista', 'Violinista'], $profile->instruments);
+
+        // Verify the dynamic list on Home page includes the custom instrument
+        $homeResponse = $this->get('/');
+        $homeResponse->assertStatus(200);
+        
+        $homeResponse->assertInertia(function (\Inertia\Testing\AssertableInertia $page) {
+            $page->has('instrumentsList')
+                ->where('instrumentsList', function ($list) {
+                    $array = $list instanceof \Illuminate\Support\Collection ? $list->toArray() : $list;
+                    return in_array('Violinista', $array) && in_array('Guitarrista', $array);
+                });
+        });
+    }
 }
 

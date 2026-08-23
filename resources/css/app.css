@@ -3,147 +3,355 @@
 @tailwind utilities;
 
 :root {
-  /* Default Cyan Palette (Kita Neon primary) */
-  --color-cyan-50: 236 254 255;
-  --color-cyan-100: 207 250 254;
-  --color-cyan-200: 165 243 252;
-  --color-cyan-300: 103 232 249;
-  --color-cyan-400: 34 211 238;
-  --color-cyan-500: 6 182 212;
-  --color-cyan-600: 8 145 178;
-  --color-cyan-700: 14 116 144;
-  --color-cyan-800: 21 94 117;
-  --color-cyan-900: 22 78 99;
-  --color-cyan-950: 8 47 73;
+    /* Default Cyan Palette (Kita Neon primary) */
+    --color-cyan-50: 236 254 255;
+    --color-cyan-100: 207 250 254;
+    --color-cyan-200: 165 243 252;
+    --color-cyan-300: 103 232 249;
+    --color-cyan-400: 34 211 238;
+    --color-cyan-500: 6 182 212;
+    --color-cyan-600: 8 145 178;
+    --color-cyan-700: 14 116 144;
+    --color-cyan-800: 21 94 117;
+    --color-cyan-900: 22 78 99;
+    --color-cyan-950: 8 47 73;
 
-  /* Default Blue Palette (Kita Neon secondary) */
-  --color-blue-50: 239 246 255;
-  --color-blue-100: 219 234 254;
-  --color-blue-200: 191 219 254;
-  --color-blue-300: 147 197 253;
-  --color-blue-400: 96 165 250;
-  --color-blue-500: 59 130 246;
-  --color-blue-600: 37 99 235;
-  --color-blue-700: 29 78 216;
-  --color-blue-800: 30 64 175;
-  --color-blue-900: 30 58 138;
-  --color-blue-950: 23 37 84;
+    /* Default Blue Palette (Kita Neon secondary) */
+    --color-blue-50: 239 246 255;
+    --color-blue-100: 219 234 254;
+    --color-blue-200: 191 219 254;
+    --color-blue-300: 147 197 253;
+    --color-blue-400: 96 165 250;
+    --color-blue-500: 59 130 246;
+    --color-blue-600: 37 99 235;
+    --color-blue-700: 29 78 216;
+    --color-blue-800: 30 64 175;
+    --color-blue-900: 30 58 138;
+    --color-blue-950: 23 37 84;
 }
 
 /* Kita Neon (Uses Default Cyan / Blue) */
 .theme-kita-neon {
-  --color-cyan-50: 236 254 255;
-  --color-cyan-100: 207 250 254;
-  --color-cyan-200: 165 243 252;
-  --color-cyan-300: 103 232 249;
-  --color-cyan-400: 34 211 238;
-  --color-cyan-500: 6 182 212;
-  --color-cyan-600: 8 145 178;
-  --color-cyan-700: 14 116 144;
-  --color-cyan-800: 21 94 117;
-  --color-cyan-900: 22 78 99;
-  --color-cyan-950: 8 47 73;
+    --color-cyan-50: 236 254 255;
+    --color-cyan-100: 207 250 254;
+    --color-cyan-200: 165 243 252;
+    --color-cyan-300: 103 232 249;
+    --color-cyan-400: 34 211 238;
+    --color-cyan-500: 6 182 212;
+    --color-cyan-600: 8 145 178;
+    --color-cyan-700: 14 116 144;
+    --color-cyan-800: 21 94 117;
+    --color-cyan-900: 22 78 99;
+    --color-cyan-950: 8 47 73;
 
-  --color-blue-50: 239 246 255;
-  --color-blue-100: 219 234 254;
-  --color-blue-200: 191 219 254;
-  --color-blue-300: 147 197 253;
-  --color-blue-400: 96 165 250;
-  --color-blue-500: 59 130 246;
-  --color-blue-600: 37 99 235;
-  --color-blue-700: 29 78 216;
-  --color-blue-800: 30 64 175;
-  --color-blue-900: 30 58 138;
-  --color-blue-950: 23 37 84;
+    --color-blue-50: 239 246 255;
+    --color-blue-100: 219 234 254;
+    --color-blue-200: 191 219 254;
+    --color-blue-300: 147 197 253;
+    --color-blue-400: 96 165 250;
+    --color-blue-500: 59 130 246;
+    --color-blue-600: 37 99 235;
+    --color-blue-700: 29 78 216;
+    --color-blue-800: 30 64 175;
+    --color-blue-900: 30 58 138;
+    --color-blue-950: 23 37 84;
 }
 
 /* Cyber Purple (Cyan -> Purple, Blue -> Pink) */
 .theme-cyber-purple {
-  --color-cyan-50: 250 245 255;
-  --color-cyan-100: 243 232 255;
-  --color-cyan-200: 233 213 255;
-  --color-cyan-300: 216 180 254;
-  --color-cyan-400: 192 132 252;
-  --color-cyan-500: 168 85 247;
-  --color-cyan-600: 147 51 234;
-  --color-cyan-700: 126 34 206;
-  --color-cyan-800: 107 33 168;
-  --color-cyan-900: 88 28 135;
-  --color-cyan-950: 59 7 100;
+    --color-cyan-50: 250 245 255;
+    --color-cyan-100: 243 232 255;
+    --color-cyan-200: 233 213 255;
+    --color-cyan-300: 216 180 254;
+    --color-cyan-400: 192 132 252;
+    --color-cyan-500: 168 85 247;
+    --color-cyan-600: 147 51 234;
+    --color-cyan-700: 126 34 206;
+    --color-cyan-800: 107 33 168;
+    --color-cyan-900: 88 28 135;
+    --color-cyan-950: 59 7 100;
 
-  --color-blue-50: 253 242 248;
-  --color-blue-100: 252 231 243;
-  --color-blue-200: 247 186 220;
-  --color-blue-300: 244 114 182;
-  --color-blue-400: 244 114 182;
-  --color-blue-500: 236 72 153;
-  --color-blue-600: 219 39 119;
-  --color-blue-700: 190 24 93;
-  --color-blue-800: 157 23 77;
-  --color-blue-900: 131 24 67;
-  --color-blue-950: 80 7 36;
+    --color-blue-50: 253 242 248;
+    --color-blue-100: 252 231 243;
+    --color-blue-200: 247 186 220;
+    --color-blue-300: 244 114 182;
+    --color-blue-400: 244 114 182;
+    --color-blue-500: 236 72 153;
+    --color-blue-600: 219 39 119;
+    --color-blue-700: 190 24 93;
+    --color-blue-800: 157 23 77;
+    --color-blue-900: 131 24 67;
+    --color-blue-950: 80 7 36;
 }
 
 /* Volt Orange (Cyan -> Orange, Blue -> Amber) */
 .theme-volt-orange {
-  --color-cyan-50: 255 247 237;
-  --color-cyan-100: 255 237 213;
-  --color-cyan-200: 254 215 170;
-  --color-cyan-300: 253 186 116;
-  --color-cyan-400: 251 146 60;
-  --color-cyan-500: 249 115 22;
-  --color-cyan-600: 234 88 12;
-  --color-cyan-700: 194 65 12;
-  --color-cyan-800: 166 53 14;
-  --color-cyan-900: 124 45 18;
-  --color-cyan-950: 67 20 7;
+    --color-cyan-50: 255 247 237;
+    --color-cyan-100: 255 237 213;
+    --color-cyan-200: 254 215 170;
+    --color-cyan-300: 253 186 116;
+    --color-cyan-400: 251 146 60;
+    --color-cyan-500: 249 115 22;
+    --color-cyan-600: 234 88 12;
+    --color-cyan-700: 194 65 12;
+    --color-cyan-800: 166 53 14;
+    --color-cyan-900: 124 45 18;
+    --color-cyan-950: 67 20 7;
 
-  --color-blue-50: 254 252 232;
-  --color-blue-100: 254 249 195;
-  --color-blue-200: 253 230 138;
-  --color-blue-300: 252 211 77;
-  --color-blue-400: 251 191 36;
-  --color-blue-500: 245 158 11;
-  --color-blue-600: 217 119 6;
-  --color-blue-700: 180 83 9;
-  --color-blue-800: 146 64 14;
-  --color-blue-900: 120 53 4;
-  --color-blue-950: 69 26 3;
+    --color-blue-50: 254 252 232;
+    --color-blue-100: 254 249 195;
+    --color-blue-200: 253 230 138;
+    --color-blue-300: 252 211 77;
+    --color-blue-400: 251 191 36;
+    --color-blue-500: 245 158 11;
+    --color-blue-600: 217 119 6;
+    --color-blue-700: 180 83 9;
+    --color-blue-800: 146 64 14;
+    --color-blue-900: 120 53 4;
+    --color-blue-950: 69 26 3;
 }
 
 /* Electric Red (Cyan -> Red, Blue -> Orange) */
 .theme-electric-red {
-  --color-cyan-50: 254 242 242;
-  --color-cyan-100: 254 226 226;
-  --color-cyan-200: 254 202 202;
-  --color-cyan-300: 252 165 165;
-  --color-cyan-400: 248 113 113;
-  --color-cyan-500: 239 68 68;
-  --color-cyan-600: 220 38 38;
-  --color-cyan-700: 185 28 28;
-  --color-cyan-800: 153 27 27;
-  --color-cyan-900: 127 29 29;
-  --color-cyan-950: 69 10 10;
+    --color-cyan-50: 254 242 242;
+    --color-cyan-100: 254 226 226;
+    --color-cyan-200: 254 202 202;
+    --color-cyan-300: 252 165 165;
+    --color-cyan-400: 248 113 113;
+    --color-cyan-500: 239 68 68;
+    --color-cyan-600: 220 38 38;
+    --color-cyan-700: 185 28 28;
+    --color-cyan-800: 153 27 27;
+    --color-cyan-900: 127 29 29;
+    --color-cyan-950: 69 10 10;
 
-  --color-blue-50: 255 247 237;
-  --color-blue-100: 255 237 213;
-  --color-blue-200: 254 215 170;
-  --color-blue-300: 253 186 116;
-  --color-blue-400: 251 146 60;
-  --color-blue-500: 249 115 22;
-  --color-blue-600: 234 88 12;
-  --color-blue-700: 194 65 12;
-  --color-blue-800: 166 53 14;
-  --color-blue-900: 124 45 18;
-  --color-blue-950: 67 20 7;
+    --color-blue-50: 255 247 237;
+    --color-blue-100: 255 237 213;
+    --color-blue-200: 254 215 170;
+    --color-blue-300: 253 186 116;
+    --color-blue-400: 251 146 60;
+    --color-blue-500: 249 115 22;
+    --color-blue-600: 234 88 12;
+    --color-blue-700: 194 65 12;
+    --color-blue-800: 166 53 14;
+    --color-blue-900: 124 45 18;
+    --color-blue-950: 67 20 7;
 }
 
 /* Hide scrollbar for carousel */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari and Opera */
+    display: none;
+    /* Chrome, Safari and Opera */
+}
+
+/* ----------------------------------------------------
+ * LIGHT MODE OVERRIDES
+ * Only active when the html element has class "light"
+ * ---------------------------------------------------- */
+
+html.light,
+html.light body,
+html.light .bg-\[\#050b14\],
+html.light .bg-slate-950 {
+    background-color: #f8fafc !important;
+    background-image: none !important;
+    color: #055ad1 !important;
+}
+
+/* Page titles and text overrides (excluding navbar header) */
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6,
+html.light :not(header) .text-white {
+    color: #02cee9f3 !important;
+}
+
+html.light :not(header) .text-slate-100 {
+    color: #045ff3 !important;
+}
+
+html.light :not(header) .text-slate-200 {
+    color: #0465ee !important;
+}
+
+html.light :not(header) .text-slate-300,
+html.light :not(header) .text-slate-400 {
+    color: #000000 !important;
+}
+
+html.light :not(header) .text-slate-500 {
+    color: #29a2b8 !important;
+}
+
+/* Ambient glow blobs opacity adjustments for light mode */
+html.light .bg-cyan-500\/5,
+html.light .bg-blue-500\/5,
+html.light .bg-blue-600\/5 {
+    background-color: rgba(208, 244, 250, 0.959) !important;
+}
+
+/* Ambient top gradient overrides for light mode */
+html.light .bg-gradient-to-b.from-cyan-950\/20,
+html.light .from-cyan-950\/20 {
+    background-image: linear-gradient(to bottom, rgba(167, 235, 247, 0.733), transparent) !important;
+}
+
+/* Card / Section Panels (Todas las vistas) */
+html.light .bg-slate-900,
+html.light .bg-slate-900\/30,
+html.light .bg-slate-900\/40,
+html.light .bg-slate-900\/60,
+html.light .bg-\[\#0d1527\]\/50,
+html.light .bg-slate-950\/40,
+html.light .bg-slate-950\/50,
+html.light .bg-slate-950\/60,
+html.light article.bg-\[\#0d1527\]\/50,
+html.light .bg-\[\#0d1527\] {
+    background-color: #ffffff !important;
+    /* <--- COLOR DE LAS TARJETAS (Modificar aquí) */
+    border-color: #e2e8f0 !important;
+    /* Color del borde de las tarjetas */
+    box-shadow: 0 4px 6px -1px rgba(12, 196, 241, 0.05), 0 2px 4px -1px rgba(35, 238, 245, 0.925) !important;
+}
+
+/* Borders */
+html.light .border-slate-900,
+html.light .border-slate-900\/60,
+html.light .border-slate-800\/80,
+html.light .border-slate-850 {
+    border-color: #e2e8f0 !important;
+}
+
+/* Divider lines */
+html.light .border-t {
+    border-color: #f1f5f9 !important;
+}
+
+/* Inputs & Form Fields */
+html.light input[type="text"],
+html.light select,
+html.light textarea {
+    background-color: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #000000 !important;
+}
+
+html.light input[type="text"]::placeholder {
+    color: #94a3b8 !important;
+}
+
+html.light input:focus,
+html.light select:focus,
+html.light textarea:focus {
+    border-color: rgb(6 182 212 / 0.5) !important;
+    box-shadow: 0 0 0 1px rgb(6 182 212 / 0.2) !important;
+}
+
+/* Tags/Pills */
+html.light .bg-slate-800 {
+    background-color: #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+html.light .bg-slate-850 {
+    background-color: #cbd5e1 !important;
+    color: #1e293b !important;
+}
+
+html.light .bg-cyan-950\/80 {
+    background-color: #ecfeff !important;
+    color: #0891b2 !important;
+    border-color: #cffafe !important;
+}
+
+html.light .bg-cyan-950\/40 {
+    background-color: #ecfeff !important;
+    border-color: #cffafe !important;
+}
+
+/* Favorites Button (Heart icon container) */
+html.light .bg-\[\#0d1527\]\/80 {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+
+/* Mobile Sidebar Adaptations */
+html.light .bg-slate-900\/98 {
+    background-color: #ffffff !important;
+}
+
+html.light .bg-slate-950\/50 {
+    background-color: #f8fafc !important;
+}
+
+html.light .bg-slate-950\/60 {
+    background-color: #f1f5f9 !important;
+}
+
+/* Grid/List View Toggles */
+html.light .bg-slate-950\/60 {
+    background-color: #f1f5f9 !important;
+}
+
+/* ====================================================
+ * COLOR DEL NAVBAR EN MODO CLARO
+ * ==================================================== */
+
+/* 1. Fondo del Navbar y su borde inferior */
+html.light header {
+    background-color: rgba(255, 255, 255, 0.85) !important;
+    /* Blanco con transparencia blur */
+    border-color: #e2e8f0 !important;
+    /* Borde gris claro */
+}
+
+/* 2. Textos y Enlaces del Menú en modo claro (Mi TPV, Almacén, etc.) */
+html.light header nav a {
+    color: #334155 !important;
+    /* Texto gris oscuro */
+}
+
+html.light header nav a:hover {
+    color: #0f172a !important;
+    /* Texto negro en hover */
+}
+
+/* 3. Subtítulo del Logo "TU MANAGER VIRTUAL" y su borde vertical */
+html.light header span.text-slate-500 {
+    color: #94a3b8 !important;
+    /* Gris claro para el subtítulo */
+    border-color: #e2e8f0 !important;
+}
+
+/* 4. Enlaces Activos (cuando estás en esa sección) */
+html.light header nav a.text-cyan-400 {
+    color: #0891b2 !important;
+    /* Cambia a un cian más oscuro y visible */
+}
+
+/* 5. Botón de Perfil  */
+html.light header button.bg-slate-950\/60 {
+    background-color: #f1f5f9 !important;
+    /* Fondo gris muy claro */
+    border-color: #e2e8f0 !important;
+    color: #0f172a !important;
+}
+
+html.light header button.bg-slate-950\/60 span {
+    color: #334155 !important;
+    /* Nombre del perfil */
+}
+
+html.light header button.bg-slate-950\/60:hover {
+    border-color: #0891b2 !important;
 }

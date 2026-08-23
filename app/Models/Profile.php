@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'user_id',
     'name',
     'instruments',
+    'genres',
     'coverage_area',
     'slug',
     'bio',
@@ -57,6 +58,7 @@ class Profile extends Model
     {
         return [
             'instruments' => 'array',
+            'genres' => 'array',
             'widget_status' => 'array',
             'coverage_area' => 'array',
         ];
