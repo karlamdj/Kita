@@ -1,58 +1,298 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🎵 KITA - Plataforma & Tarjeta de Presentación Virtual (TPV) para Músicos
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="Kita Banner" />
 </p>
 
-## About Laravel
+<p align="center">
+  <strong>Plataforma digital para la gestión de portafolios, agendas y tarjetas de presentación interactivas para artistas y agrupaciones musicales.</strong>
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  <img src="https://img.shields.io/badge/Laravel-11%2B%20%2F%2012-FF2D20?style=for-the-badge&logo=laravel&logoColor=white" alt="Laravel" />
+  <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white" alt="Vue 3" />
+  <img src="https://img.shields.io/badge/Inertia.js-2.0-9553E9?style=for-the-badge&logo=inertia&logoColor=white" alt="Inertia.js" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/MySQL-8.4-4479A1?style=for-the-badge&logo=mysql&logoColor=white" alt="MySQL" />
+  <img src="https://img.shields.io/badge/Docker-Laravel_Sail-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker Sail" />
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🎯 1. Fin del Proyecto
 
-## Learning Laravel
+**Kita** nace con el objetivo de revolucionar la forma en que los músicos, solistas y bandas gestionan su presencia digital y se conectan con contratistas, venues, organizadores de eventos y su público.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+### Objetivos Principales
+* **Tarjeta de Presentación Virtual (TPV) Interactiva:** Reemplazar las tarjetas de presentación impresas tradicionales por un perfil web dinámico (`/{slug}`), optimizado para dispositivos móviles y accesible al instante.
+* **Directorio Público de Talento Musical:** Un buscador en tiempo real con filtros por instrumento, género y zona de cobertura geográfica para conectar a contratistas con artistas disponibles en su región.
+* **Difusión Instantánea mediante Código QR:** Cada artista cuenta con un código QR autogenerado descargable para imprimir en pósters de conciertos, tarjetas físicas o proyectar durante shows en vivo.
+* **Gestión Centralizada de Portafolio y Agenda:** Panel privado donde el músico administra sus próximas presentaciones, bloqueos de fechas, muestras de audio/video de redes sociales y galerías fotográficas.
+* **Contacto Directo Sin Intermediarios:** Enlace directo de contratación vía WhatsApp y redirección a plataformas de streaming (Spotify, YouTube, etc.) y redes sociales.
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## 🛠️ 2. Stack Tecnológico
 
-## Agentic Development
+El proyecto está construido bajo una arquitectura monolítica moderna impulsada por el stack **Laravel + Inertia.js + Vue 3**, ofreciendo la reactividad de una SPA (Single Page Application) sin la complejidad de crear y mantener una API REST separada.
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Backend
+* **PHP 8.3+ / 8.5**
+* **Laravel Framework:** Manejo de enrutamiento, controladores, Eloquent ORM, migraciones, seeders y middleware de autenticación.
+* **Laravel Breeze & Sanctum:** Autenticación por sesión y protección de rutas privadas.
+* **Laravel Socialite:** Autenticación OAuth rápida y segura mediante cuentas de Google.
+* **Inertia.js (Laravel Adapter v2.0):** Puente que permite renderizar componentes Vue directamente desde controladores de Laravel pasando props reactivas.
+* **Tightenco / Ziggy:** Generación y consumo de rutas nombradas de Laravel en el entorno JavaScript (`route('profile.show')`).
 
-```bash
-composer require laravel/boost --dev
+### Frontend
+* **Vue.js 3 (Composition API & `<script setup>`):** Interfaces dinámicas, reactivas y componentes modulares.
+* **Tailwind CSS & PostCSS:** Sistema de estilos utilitarios con soporte para temas oscuros, efectos de neón, gradientes y diseño responsivo.
+* **Sistema de Temas Dinámicos:** Soporte para múltiples paletas visuales personalizadas por artista (*Kita Neon*, *Cyber Purple*, etc.).
+* **Vite:** Herramienta de compilación ultrarrápida y servidor de desarrollo con Hot Module Replacement (HMR).
+* **qrcode.vue:** Generación reactiva de códigos QR vectoriales para cada perfil.
+* **html2canvas:** Exportación y descarga gráfica de tarjetas de presentación y códigos QR en formato imagen.
 
-php artisan boost:install
+### Base de Datos, Almacenamiento & DevOps
+* **MySQL 8.4:** Almacenamiento relacional de usuarios, perfiles, eventos y elementos multimedia.
+* **Laravel Storage:** Gestión local y en la nube para subida de fotos de perfil, avatares y galerías de imágenes.
+* **Laravel Sail (Docker):** Entorno de desarrollo contenerizado con servicios preconfigurados para PHP/Nginx y MySQL.
+
+---
+
+## 📊 3. Diagramas de Funcionamiento
+
+### A. Arquitectura General del Sistema
+
+```mermaid
+flowchart TD
+    subgraph Cliente["💻 Navegador / Dispositivo Móvil"]
+        UI["Interfaz Vue 3 + Tailwind CSS"]
+        QR["Generador & Descarga QR (qrcode.vue / html2canvas)"]
+        ZiggyClient["Ziggy (Rutas Laravel en JS)"]
+    end
+
+    subgraph InertiaLayer["⚡ Capa de Enlace (Inertia.js)"]
+        Inertia["Inertia Protocol (Props / Visitas SPA)"]
+    end
+
+    subgraph Backend["⚙️ Backend Laravel"]
+        Router["Laravel Router & Middlewares (Auth, Verified)"]
+        Controllers["Controladores (Profile, Media, Event, PublicProfile)"]
+        OAuth["Google OAuth (Socialite)"]
+        Eloquent["Eloquent ORM (Modelos: User, Profile, Media, Event)"]
+    end
+
+    subgraph StorageDB["💾 Persistencia & Almacenamiento"]
+        MySQL[("MySQL 8.4 (Base de Datos)")]
+        DiskStorage["Laravel Storage (Imágenes / Avatares)"]
+    end
+
+    UI <--> Inertia
+    Inertia <--> Router
+    Router --> Controllers
+    Controllers --> OAuth
+    Controllers --> Eloquent
+    Eloquent <--> MySQL
+    Controllers <--> DiskStorage
+    ZiggyClient -.-> Router
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+### B. Flujo de Experiencia de Usuarios
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Visitante as 👥 Público / Contratista
+    actor Musico as 🎸 Músico / Artista
+    participant Web as 🌐 Directorio & TPV (Frontend)
+    participant Server as ⚙️ Servidor Laravel / Inertia
+    participant DB as 🗄️ MySQL Database
 
-## Code of Conduct
+    %% Flujo 1: Visitante busca y contacta
+    Note over Visitante, DB: 1. Flujo de Descubrimiento y Contratación
+    Visitante->>Web: Ingresa a la página principal (Home)
+    Web->>Server: GET / (Filtros: instrumento, zona, búsqueda)
+    Server->>DB: Consulta perfiles activos con media y eventos
+    DB-->>Server: Retorna lista de artistas
+    Server-->>Web: Renderiza directorio reactivo
+    Visitante->>Web: Selecciona un artista o escanea su Código QR (/{slug})
+    Web->>Server: GET /{slug}
+    Server->>DB: Carga perfil, multimedia y agenda confirmada
+    DB-->>Server: Retorna datos completos
+    Server-->>Web: Renderiza TPV con tema seleccionado
+    Visitante->>Web: Hace clic en "Contactar por WhatsApp"
+    Web-->>Visitante: Redirige a chat directo de WhatsApp
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    %% Flujo 2: Músico gestiona su TPV
+    Note over Musico, DB: 2. Flujo de Administración del Artista
+    Musico->>Web: Inicia Sesión (Email/Password o Google)
+    Web->>Server: POST /login o OAuth Google Callback
+    Server-->>Web: Autenticación exitosa y redirección a /dashboard
+    Musico->>Web: Configura biografía, tema visual y redes sociales
+    Web->>Server: PUT /dashboard/tpv/editar
+    Server->>DB: Actualiza registro en tabla 'profiles'
+    Musico->>Web: Agrega nuevo evento o bloquea fecha
+    Web->>Server: POST /dashboard/calendario/eventos
+    Server->>DB: Inserta en tabla 'events'
+    Musico->>Web: Sube foto o vincula video (YouTube, TikTok, etc.)
+    Web->>Server: POST /dashboard/medios
+    Server->>DB: Inserta en tabla 'media'
+    Server-->>Web: Notifica actualización en tiempo real
+    Musico->>Web: Descarga su Código QR para promoción
+```
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### C. Diagrama Entidad - Relación (Base de Datos)
 
-## License
+```mermaid
+erDiagram
+    USERS ||--o{ PROFILES : "posee (1 a N)"
+    PROFILES ||--o{ MEDIA : "tiene (1 a N)"
+    PROFILES ||--o{ EVENTS : "agenda (1 a N)"
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+    USERS {
+        bigint id PK
+        string name
+        string email UK
+        string password
+        string google_id
+        string avatar
+        datetime email_verified_at
+        timestamps created_at_updated_at
+    }
+
+    PROFILES {
+        bigint id PK
+        bigint user_id FK
+        string name
+        json instruments "Array de instrumentos"
+        json coverage_area "Zonas de cobertura"
+        string slug UK "Identificador único de TPV"
+        text bio "Biografía del artista"
+        string profile_photo_path
+        string avatar_path
+        string theme "Tema visual (ej. kita-neon)"
+        json widget_status "Configuración de widgets y redes"
+        timestamps created_at_updated_at
+    }
+
+    MEDIA {
+        bigint id PK
+        bigint profile_id FK
+        string type "video / photo / youtube / vimeo"
+        string url "Enlace externo a video"
+        string path "Ruta local de imagen subida"
+        string title "Título / Pie de foto"
+        int sort_order "Orden de visualización"
+        timestamps created_at_updated_at
+    }
+
+    EVENTS {
+        bigint id PK
+        bigint profile_id FK
+        string title "Nombre del evento"
+        text description "Detalles de la presentación"
+        datetime start_time "Fecha y hora de inicio"
+        datetime end_time "Fecha y hora de término"
+        string type "concierto / ensayo / disponible / show"
+        string location "Ubicación o venue"
+        string status "confirmed / blocked / cancelled"
+        timestamps created_at_updated_at
+    }
+```
+
+---
+
+## 🚀 4. Instalación y Entorno de Desarrollo Local
+
+### Requisitos Previos
+* [Docker Desktop](https://www.docker.com/) instalado y en ejecución.
+* [Node.js](https://nodejs.org/) (v18 o superior) y NPM.
+* [Composer](https://getcomposer.org/) (opcional si se usa directamente dentro de Sail).
+
+### Pasos de Configuración
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone <URL_DEL_REPOSITORIO>
+   cd Kita
+   ```
+
+2. **Configurar las variables de entorno:**
+   ```bash
+   cp .env.example .env
+   ```
+
+3. **Iniciar los contenedores Docker con Laravel Sail:**
+   ```bash
+   ./vendor/bin/sail up -d
+   ```
+   > *Nota:* Si tienes configurado el alias en tu shell, puedes ejecutar simplemente `sail up -d`.
+
+4. **Instalar dependencias de PHP y generar la clave de aplicación:**
+   ```bash
+   sail composer install
+   sail artisan key:generate
+   ```
+
+5. **Ejecutar migraciones y poblar la base de datos con datos de prueba:**
+   ```bash
+   sail artisan migrate:fresh --seed
+   ```
+
+6. **Crear el enlace simbólico para almacenamiento público de imágenes:**
+   ```bash
+   sail artisan storage:link
+   ```
+
+7. **Instalar dependencias de Node e iniciar el servidor de desarrollo Vite:**
+   ```bash
+   npm install
+   npm run dev
+   ```
+
+8. **Acceder a la aplicación:**
+   * **Directorio Principal:** [http://localhost](http://localhost)
+   * **Vite HMR:** [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 📁 5. Estructura del Proyecto
+
+```text
+Kita/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/          # Controladores (Profile, Media, Event, PublicProfile)
+│   │   ├── Middleware/           # Middlewares de seguridad e Inertia
+│   │   └── Requests/             # Form Requests de validación
+│   └── Models/                   # Modelos Eloquent (User, Profile, Media, Event)
+├── database/
+│   ├── migrations/               # Migraciones de base de datos
+│   └── seeders/                  # Seeders con perfiles y músicos de ejemplo
+├── resources/
+│   ├── css/                      # Estilos globales y Tailwind CSS
+│   └── js/
+│       ├── Components/           # Componentes Vue reutilizables (Navbar, Cards, Modales)
+│       ├── Layouts/              # Layouts autenticados y públicos
+│       └── Pages/                # Vistas de Inertia
+│           ├── Home.vue          # Directorio público de músicos
+│           ├── Dashboard.vue     # Panel de control del artista
+│           ├── Dashboard/        # Gestión de medios y calendario
+│           └── Profile/          # TPV pública (Show.vue) y edición (ArtistEdit.vue)
+├── routes/
+│   ├── web.php                   # Rutas web y de TPV pública /{slug}
+│   └── auth.php                  # Rutas de autenticación Breeze / Socialite
+├── compose.yaml                  # Configuración de Docker Compose (Laravel Sail)
+├── tailwind.config.js            # Configuración de temas y Tailwind
+└── vite.config.js                # Configuración de Vite y plugins
+```
+
+---
+
+## 📄 Licencia
+
+Este proyecto está distribuido bajo la licencia [MIT](LICENSE).

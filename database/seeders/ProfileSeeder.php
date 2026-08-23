@@ -26,7 +26,9 @@ class ProfileSeeder extends Seeder
             'mateo@kita.app',
             'sunset@kita.app',
             'camila@kita.app'
-        ])->delete();        $musicians = [
+        ])->delete();
+
+        $musicians = [
             [
                 'name' => 'Alejandro Gómez',
                 'email' => 'alejandro@kita.app',
