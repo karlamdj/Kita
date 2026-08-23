@@ -250,6 +250,26 @@ const tpvPublicUrl = computed(() => {
     return window.location.origin;
 });
 
+// Computed display domain for input prefix
+const displayDomain = computed(() => {
+    if (typeof window !== 'undefined') {
+        return window.location.host + '/';
+    }
+    return 'kita.vmdjtech.com/';
+});
+
+// Copy link to clipboard logic
+const copied = ref(false);
+const copyTpvLink = () => {
+    const url = tpvPublicUrl.value;
+    navigator.clipboard.writeText(url).then(() => {
+        copied.value = true;
+        setTimeout(() => {
+            copied.value = false;
+        }, 2000);
+    });
+};
+
 // Format phone for display (keeps only digits then formats)
 const displayPhone = computed(() => {
     const raw = form.widget_status.whatsapp || '';
@@ -435,7 +455,7 @@ const closeAccountModal = () => {
                                 <label class="text-xs font-semibold text-slate-400 block mb-1">Enlace Compartible (Slug Único)</label>
                                 <div class="flex">
                                     <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-850 bg-slate-950 text-slate-500 text-xs sm:text-sm">
-                                        kita.app/
+                                        {{ displayDomain }}
                                     </span>
                                     <input
                                         v-model="form.slug"
@@ -487,7 +507,21 @@ const closeAccountModal = () => {
                             </div>
 
                             <!-- QR / Tarjeta Digital CTA -->
-                            <div class="md:col-span-2 flex justify-end pb-1.5" v-if="props.profile.slug">
+                            <div class="md:col-span-2 flex justify-between items-center pb-1.5" v-if="props.profile.slug">
+                                <button
+                                    type="button"
+                                    @click="copyTpvLink"
+                                    :class="['text-xs font-bold flex items-center gap-1.5 transition-all duration-200 cursor-pointer bg-transparent border-none p-0 group', qrTheme.textMain]"
+                                >
+                                    <svg v-if="!copied" class="h-4 w-4 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                    </svg>
+                                    <svg v-else class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    {{ copied ? '¡Enlace Copiado!' : 'Copiar Enlace Personal' }}
+                                </button>
+
                                 <button
                                     type="button"
                                     @click="showQrModal = true"
