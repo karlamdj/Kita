@@ -162,35 +162,36 @@ html.light .bg-\[\#050b14\],
 html.light .bg-slate-950 {
     background-color: #f8fafc !important;
     background-image: none !important;
-    color: #055ad1 !important;
+    color: #1e293b !important;
 }
 
-/* Page titles and text overrides (excluding navbar header) */
+/* Page titles and main headings in Light Mode */
 html.light h1,
 html.light h2,
 html.light h3,
 html.light h4,
 html.light h5,
-html.light h6,
-html.light :not(header) .text-white {
-    color: #02cee9f3 !important;
+html.light h6 {
+    color: #0f172a !important;
 }
 
-html.light :not(header) .text-slate-100 {
-    color: #045ff3 !important;
+/* Section titles with cyan accents */
+html.light h1.text-white,
+html.light h2.text-white,
+html.light h3.text-white {
+    color: #0284c7 !important;
 }
 
-html.light :not(header) .text-slate-200 {
-    color: #0465ee !important;
+/* Text Colors in Light Mode */
+html.light .text-slate-100,
+html.light .text-slate-200,
+html.light .text-slate-300 {
+    color: #1e293b !important;
 }
 
-html.light :not(header) .text-slate-300,
-html.light :not(header) .text-slate-400 {
-    color: #000000 !important;
-}
-
-html.light :not(header) .text-slate-500 {
-    color: #29a2b8 !important;
+html.light .text-slate-400,
+html.light .text-slate-500 {
+    color: #64748b !important;
 }
 
 /* Ambient glow blobs opacity adjustments for light mode */
@@ -211,29 +212,35 @@ html.light .bg-slate-900,
 html.light .bg-slate-900\/30,
 html.light .bg-slate-900\/40,
 html.light .bg-slate-900\/60,
+html.light .bg-slate-900\/90,
 html.light .bg-\[\#0d1527\]\/50,
 html.light .bg-slate-950\/40,
 html.light .bg-slate-950\/50,
 html.light .bg-slate-950\/60,
-html.light article.bg-\[\#0d1527\]\/50,
+html.light article,
 html.light .bg-\[\#0d1527\] {
     background-color: #ffffff !important;
-    /* <--- COLOR DE LAS TARJETAS (Modificar aquí) */
     border-color: #e2e8f0 !important;
-    /* Color del borde de las tarjetas */
     box-shadow: 0 4px 6px -1px rgba(12, 196, 241, 0.05), 0 2px 4px -1px rgba(35, 238, 245, 0.925) !important;
+}
+
+/* Cover photo containers should stay dark so images & gradient overlays render cleanly */
+html.light .card-cover-photo {
+    background-color: #090d16 !important;
 }
 
 /* Borders */
 html.light .border-slate-900,
 html.light .border-slate-900\/60,
 html.light .border-slate-800\/80,
+html.light .border-slate-800,
 html.light .border-slate-850 {
     border-color: #e2e8f0 !important;
 }
 
 /* Divider lines */
-html.light .border-t {
+html.light .border-t,
+html.light .border-b {
     border-color: #f1f5f9 !important;
 }
 
@@ -243,10 +250,11 @@ html.light select,
 html.light textarea {
     background-color: #ffffff !important;
     border-color: #cbd5e1 !important;
-    color: #000000 !important;
+    color: #0f172a !important;
 }
 
-html.light input[type="text"]::placeholder {
+html.light input[type="text"]::placeholder,
+html.light textarea::placeholder {
     color: #94a3b8 !important;
 }
 
@@ -257,14 +265,53 @@ html.light textarea:focus {
     box-shadow: 0 0 0 1px rgb(6 182 212 / 0.2) !important;
 }
 
-/* Tags/Pills */
-html.light .bg-slate-800 {
-    background-color: #e2e8f0 !important;
-    color: #475569 !important;
+/* ----------------------------------------------------
+ * GENRE PILLS / ETIQUETAS DE GÉNEROS MUSICALES
+ * ---------------------------------------------------- */
+.genre-pill {
+    background-color: rgba(30, 41, 59, 0.85);
+    color: #cbd5e1;
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    transition: all 0.25s ease;
+}
+
+.genre-pill:hover {
+    border-color: rgba(6, 182, 212, 0.4);
+    color: #ecfeff;
+}
+
+.genre-pill-extra {
+    background-color: rgba(30, 41, 59, 0.6);
+    color: #22d3ee;
+    border: 1px solid rgba(51, 65, 85, 0.4);
+}
+
+/* Tags/Pills in Light Mode */
+html.light .genre-pill,
+html.light .bg-slate-800,
+html.light .bg-slate-800\/90,
+html.light .bg-slate-800\/80 {
+    background-color: #f1f5f9 !important; /* Soft slate light background */
+    color: #334155 !important;            /* Slate-700 clear text */
+    border-color: #e2e8f0 !important;      /* Soft light border */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light .genre-pill:hover {
+    background-color: #e0f2fe !important; /* Soft cyan 100 on hover */
+    color: #0369a1 !important;            /* Cyan 700 text on hover */
+    border-color: #bae6fd !important;
+}
+
+html.light .genre-pill-extra,
+html.light .bg-slate-800\/60 {
+    background-color: #ecfeff !important; /* Light cyan 50 background */
+    color: #0891b2 !important;            /* Cyan 600 text */
+    border-color: #cffafe !important;      /* Light cyan border */
 }
 
 html.light .bg-slate-850 {
-    background-color: #cbd5e1 !important;
+    background-color: #e2e8f0 !important;
     color: #1e293b !important;
 }
 
@@ -326,11 +373,16 @@ html.light header nav a:hover {
     /* Texto negro en hover */
 }
 
-/* 3. Subtítulo del Logo "TU MANAGER VIRTUAL" y su borde vertical */
+/* 3. Logo KITA y Subtítulo "TU MANAGER VIRTUAL" en modo claro */
+html.light header span.text-white {
+    color: #00b4d8 !important;
+    /* Cian brillante para el logo KITA */
+}
+
 html.light header span.text-slate-500 {
     color: #94a3b8 !important;
     /* Gris claro para el subtítulo */
-    border-color: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
 }
 
 /* 4. Enlaces Activos (cuando estás en esa sección) */

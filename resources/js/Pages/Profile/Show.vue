@@ -53,6 +53,8 @@ const THEMES = {
         play_circle_shadow: 'shadow-[0_0_15px_rgba(6,182,212,0.5)]',
         placeholder_avatar: 'from-cyan-500 to-blue-500 shadow-[0_0_35px_rgba(6,182,212,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(6,182,212,0.4)]',
+        photo_mask:       'from-cyan-950 via-slate-950/60 to-transparent',
+        photo_mask_hero:  'from-cyan-950 via-slate-950/50 to-transparent',
     },
     'cyber-purple': {
         instrument_bg:    'bg-pink-500/10 text-pink-300 border border-pink-500/20',
@@ -81,6 +83,8 @@ const THEMES = {
         play_circle_shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.5)]',
         placeholder_avatar: 'from-purple-500 to-pink-500 shadow-[0_0_35px_rgba(168,85,247,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(168,85,247,0.4)]',
+        photo_mask:       'from-purple-950 via-slate-950/60 to-transparent',
+        photo_mask_hero:  'from-purple-950 via-slate-950/50 to-transparent',
     },
     'volt-orange': {
         instrument_bg:    'bg-orange-500/10 text-orange-300 border border-orange-500/20',
@@ -109,6 +113,8 @@ const THEMES = {
         play_circle_shadow: 'shadow-[0_0_15px_rgba(249,115,22,0.5)]',
         placeholder_avatar: 'from-orange-500 to-amber-500 shadow-[0_0_35px_rgba(249,115,22,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(249,115,22,0.4)]',
+        photo_mask:       'from-orange-950 via-slate-950/60 to-transparent',
+        photo_mask_hero:  'from-orange-950 via-slate-950/50 to-transparent',
     },
     'electric-red': {
         instrument_bg:    'bg-red-500/10 text-red-300 border border-red-500/20',
@@ -137,6 +143,8 @@ const THEMES = {
         play_circle_shadow: 'shadow-[0_0_15px_rgba(239,68,68,0.5)]',
         placeholder_avatar: 'from-red-500 to-orange-500 shadow-[0_0_35px_rgba(239,68,68,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(239,68,68,0.4)]',
+        photo_mask:       'from-red-950 via-slate-950/60 to-transparent',
+        photo_mask_hero:  'from-red-950 via-slate-950/50 to-transparent',
     },
 };
 
@@ -468,8 +476,8 @@ const toggleMusicPlay = () => {
                 :alt="profile.name"
                 class="w-full h-full object-cover object-center"
             />
-            <!-- Dark integration gradient overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent"></div>
+            <!-- Dark integration gradient overlay matching the selected TPV theme -->
+            <div :class="['absolute inset-0 bg-gradient-to-t transition-colors duration-500', tc.photo_mask_hero]"></div>
         </div>
 
         <!-- Main Responsive Content Wrapper -->
@@ -620,8 +628,8 @@ const toggleMusicPlay = () => {
                                 class="w-full h-full object-cover object-center rounded-[36px]"
                             />
                             
-                            <!-- Master 3D bottom gradient mask: blends perfectly into the deep black bg -->
-                            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent pointer-events-none z-10"></div>
+                            <!-- Master 3D bottom gradient mask: blends perfectly according to the selected TPV theme -->
+                            <div :class="['absolute inset-0 bg-gradient-to-t pointer-events-none z-10 transition-colors duration-500', tc.photo_mask]"></div>
                         </template>
                         
                         <!-- Placeholder cover if profile has no photos -->

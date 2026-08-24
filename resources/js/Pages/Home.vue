@@ -103,35 +103,14 @@ const getMusicianPhoto = (musician) => {
     return 'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.0.3';
 };
 
-// Helper to resolve dynamic aesthetic pills for each musician
+// Helper to resolve dynamic music genres / styles pills for each musician
 const getMusicianTags = (musician) => {
-    // If genres are set, show them as priority tags
-    if (musician.genres && musician.genres.length > 0) {
-        return {
-            display: musician.genres.slice(0, 4),
-            extra: musician.genres.length > 4 ? musician.genres.length - 4 : 0
-        };
-    }
-
-    const rawTags = [...(musician.instruments || [])];
-    // Use second instrument and beyond as tags
-    const otherTags = rawTags.slice(1);
-    
-    if (otherTags.length === 0) {
-        // Generate consistent fallback genre pills based on musician ID
-        const genrePools = [
-            ['Rock', 'Blues', 'Jazz', 'Instrumental'],
-            ['Pop', 'Funk', 'Acústico', 'En Vivo'],
-            ['Folk', 'Indie', 'Balada', 'Sesión'],
-            ['Salsa', 'Cumbia', 'Rumba', 'Canto']
-        ];
-        const index = (musician.id || 0) % genrePools.length;
-        otherTags.push(...genrePools[index]);
-    }
+    // Only return genres established by the musician in their TPV / profile
+    const genres = Array.isArray(musician.genres) ? musician.genres.filter(g => typeof g === 'string' && g.trim().length > 0) : [];
     
     return {
-        display: otherTags.slice(0, 4),
-        extra: otherTags.length > 4 ? otherTags.length - 4 : (otherTags.length === 3 ? 0 : 2)
+        display: genres.slice(0, 4),
+        extra: genres.length > 4 ? genres.length - 4 : 0
     };
 };
 
@@ -378,16 +357,16 @@ const sortedMusicians = computed(() => {
                 <article
                     v-for="musician in sortedMusicians"
                     :key="musician.id"
-                    class="bg-[#0d1527]/50 backdrop-blur-sm border border-slate-900/80 rounded-2xl flex flex-col justify-between overflow-hidden group hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(6,182,212,0.08)] hover:-translate-y-0.5 transition-all duration-300"
+                    class="bg-[#0d1527]/50 border border-slate-900/80 rounded-2xl flex flex-col justify-between overflow-hidden group hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(6,182,212,0.08)] hover:-translate-y-0.5 transition-[border-color,box-shadow,transform] duration-300"
                 >
                     <!-- Card Top Header (Cover photo with floating badges) -->
-                    <div class="relative h-48 w-full overflow-hidden shrink-0 select-none bg-slate-950">
+                    <div class="relative h-48 w-full overflow-hidden shrink-0 select-none card-cover-photo bg-slate-900">
                         <img
                             :src="getMusicianPhoto(musician)"
                             :alt="musician.name"
                             class="w-full h-48 object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
                         
 
 
@@ -445,16 +424,19 @@ const sortedMusicians = computed(() => {
                             </p>
                         </div>
 
-                        <!-- Specialty Tags / Pills -->
-                        <div class="flex flex-wrap gap-2 mb-6">
+                        <!-- Specialty Tags / Pills (Estilos de Música / Géneros) -->
+                        <div v-if="getMusicianTags(musician).display.length > 0" class="flex flex-wrap gap-2 mb-6">
                             <span
                                 v-for="tag in getMusicianTags(musician).display"
                                 :key="tag"
-                                class="px-2.5 py-1 bg-slate-800 text-slate-300 text-xs rounded-md font-medium"
+                                class="genre-pill px-2.5 py-1 text-xs rounded-md font-medium"
                             >
                                 {{ tag }}
                             </span>
-                            <span class="px-2.5 py-1 bg-slate-850 text-slate-400 text-xs rounded-md font-semibold select-none">
+                            <span
+                                v-if="getMusicianTags(musician).extra > 0"
+                                class="genre-pill-extra px-2.5 py-1 text-xs rounded-md font-semibold select-none"
+                            >
                                 +{{ getMusicianTags(musician).extra }}
                             </span>
                         </div>
@@ -490,16 +472,16 @@ const sortedMusicians = computed(() => {
                 <article
                     v-for="musician in sortedMusicians"
                     :key="musician.id"
-                    class="bg-[#0d1527]/50 backdrop-blur-sm border border-slate-900/80 rounded-2xl flex flex-col sm:flex-row items-stretch overflow-hidden group hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(6,182,212,0.08)] transition-all duration-300"
+                    class="bg-[#0d1527]/50 border border-slate-900/80 rounded-2xl flex flex-col sm:flex-row items-stretch overflow-hidden group hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(6,182,212,0.08)] transition-[border-color,box-shadow,transform] duration-300"
                 >
                     <!-- Left Photo -->
-                    <div class="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 select-none bg-slate-950">
+                    <div class="relative w-full sm:w-48 h-48 sm:h-auto shrink-0 select-none card-cover-photo bg-slate-900 overflow-hidden">
                         <img
                             :src="getMusicianPhoto(musician)"
                             :alt="musician.name"
-                            class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
+                            class="w-full h-48 sm:h-full object-cover group-hover:scale-103 transition-transform duration-500"
                         />
-
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none sm:hidden"></div>
                     </div>
 
                     <!-- Right Details Content -->
@@ -553,13 +535,19 @@ const sortedMusicians = computed(() => {
 
                         <!-- Lower layout in list view -->
                         <div class="border-t border-slate-900 pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div class="flex flex-wrap gap-1.5">
+                            <div v-if="getMusicianTags(musician).display.length > 0" class="flex flex-wrap gap-1.5 items-center">
                                 <span
                                     v-for="tag in getMusicianTags(musician).display"
                                     :key="tag"
-                                    class="px-2 py-0.5 bg-slate-800 text-slate-300 text-xs rounded font-medium"
+                                    class="genre-pill px-2 py-0.5 text-xs rounded font-medium"
                                 >
                                     {{ tag }}
+                                </span>
+                                <span
+                                    v-if="getMusicianTags(musician).extra > 0"
+                                    class="genre-pill-extra px-2 py-0.5 text-xs rounded font-semibold select-none"
+                                >
+                                    +{{ getMusicianTags(musician).extra }}
                                 </span>
                             </div>
                             <div class="flex items-center gap-4 shrink-0">
@@ -590,39 +578,11 @@ const sortedMusicians = computed(() => {
         <!-- 6. Footer -->
         <footer class="border-t border-slate-900/60 py-10 mt-16 relative z-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center justify-center sm:justify-start">
                     <!-- Left: Copyright -->
-                    <p class="text-xs text-slate-500 font-medium text-center md:text-left select-none">
-                        © 2024 KITA - Tu Manager Virtual. Todos los derechos reservados.
+                    <p class="text-xs text-slate-500 font-medium text-center sm:text-left select-none">
+                        © 2026 KITA - Tu Manager Virtual | by VM Technologies. | Todos los derechos reservados.
                     </p>
-
-                    <!-- Right: Minimalist Social Icons -->
-                    <div class="flex items-center gap-5">
-                        <!-- Instagram -->
-                        <a href="https://instagram.com" target="_blank" class="text-slate-500 hover:text-[#00f3ff] transition-colors duration-250" title="Instagram">
-                            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.051.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-                            </svg>
-                        </a>
-                        <!-- YouTube -->
-                        <a href="https://youtube.com" target="_blank" class="text-slate-500 hover:text-[#00f3ff] transition-colors duration-250" title="YouTube">
-                            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                                <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.507a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.507 9.388.507 9.388.507s7.517 0 9.388-.507a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                            </svg>
-                        </a>
-                        <!-- TikTok -->
-                        <a href="https://tiktok.com" target="_blank" class="text-slate-500 hover:text-[#00f3ff] transition-colors duration-250" title="TikTok">
-                            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.59 4.23.97 1.2 2.27 2.05 3.73 2.45.02 1.34.01 2.68.02 4.02-1.42-.03-2.82-.44-4.04-1.2-1.12-.7-2-1.74-2.52-2.97-.04 2.3-.02 4.61-.03 6.91-.05 1.51-.43 3.01-1.11 4.35-.74 1.48-1.92 2.73-3.38 3.55-1.47.83-3.15 1.25-4.85 1.22-1.73-.02-3.43-.49-4.89-1.41-1.39-.88-2.48-2.21-3.1-3.76-.62-1.57-.74-3.29-.36-4.93.38-1.63 1.27-3.1 2.57-4.18 1.3-1.07 2.94-1.7 4.64-1.8 1.26-.08 2.53.07 3.73.54.02 1.39.01 2.78.02 4.17-.67-.22-1.38-.32-2.09-.28-.71.04-1.4.26-1.99.64-.62.4-1.1 1-1.38 1.7-.29.7-.35 1.48-.18 2.22.18.73.59 1.38 1.15 1.86.58.48 1.3.76 2.05.8 1.11.07 2.21-.29 3.05-1.03.85-.75 1.35-1.85 1.37-2.99.03-3.73.01-7.46.02-11.19z"/>
-                            </svg>
-                        </a>
-                        <!-- Spotify -->
-                        <a href="https://spotify.com" target="_blank" class="text-slate-500 hover:text-[#00f3ff] transition-colors duration-250" title="Spotify">
-                            <svg class="h-5 w-5 fill-current" viewBox="0 0 24 24">
-                                <path d="M12 0C5.373 0 0 5.372 0 12s5.373 12 12 12 12-5.372 12-12S18.627 0 12 0zm5.49 17.3c-.22.36-.685.478-1.045.258-2.868-1.752-6.48-2.15-10.732-1.176-.41.096-.82-.163-.918-.574-.097-.41.162-.82.573-.917 4.653-1.064 8.628-.606 11.865 1.373.36.22.477.685.257 1.045zm1.464-3.262c-.277.45-.86.598-1.31.32-3.284-2.02-8.293-2.607-12.177-1.428-.506.153-1.04-.136-1.194-.643-.154-.506.136-1.04.643-1.194 4.432-1.345 9.947-.694 13.718 1.63.45.276.598.86.32 1.31zm.126-3.414C15.114 8.27 8.57 8.053 4.78 9.203c-.59.18-1.21-.15-1.39-.74-.18-.59.15-1.21.74-1.39 4.35-1.32 11.56-1.07 16.1 1.62.53.31.7.99.39 1.52-.31.53-.99.7-1.52.39z"/>
-                            </svg>
-                        </a>
-                    </div>
                 </div>
             </div>
         </footer>

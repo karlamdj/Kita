@@ -442,8 +442,8 @@ const redirectToTpv = () => {
 
                 <form @submit.prevent="submit" class="flex flex-col gap-8">
                     
-                    <!-- 1. Basic Info Section -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+                    <!-- 1. Basic Information Section -->
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
                             <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -685,14 +685,14 @@ const redirectToTpv = () => {
                     </div>
 
                     <!-- Estilos de Música (Tag Input) -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
                             <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                             </svg>
                             Estilos de Música / Géneros
                         </h3>
-                        <p class="text-xs text-slate-500 mb-4">Escribe los géneros o estilos musicales que tocas (ej: Rock, Pop, Jazz, Salsa, Covers Acústicos).</p>
+                        <p class="text-xs text-slate-400 mb-4">Escribe los géneros o estilos musicales que tocas (ej: Rock, Pop, Jazz, Salsa, Covers Acústicos).</p>
 
                         <div class="flex flex-col gap-3">
                             <input
@@ -702,12 +702,12 @@ const redirectToTpv = () => {
                                 @keydown.comma.prevent="addGenreTag"
                                 @blur="addGenreTag"
                                 placeholder="Escribe un estilo de música (ej: Rock, Pop) y presiona Enter o coma..."
-                                :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
+                                :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                             />
                             
                             <!-- Rendered tags -->
                             <div class="flex flex-wrap gap-2 min-h-[32px] items-center">
-                                <span v-if="form.genres.length === 0" class="text-xs text-slate-500 italic">No se han agregado estilos de música aún.</span>
+                                <span v-if="form.genres.length === 0" class="text-xs text-slate-400 italic">No se han agregado estilos de música aún.</span>
                                 <span
                                     v-for="genre in form.genres"
                                     :key="genre"
@@ -728,7 +728,7 @@ const redirectToTpv = () => {
                     </div>
 
                     <!-- 3. Contact & Social Networks Section -->
-                    <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+                    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
                         <h3 class="text-lg font-bold text-white mb-4 border-b border-slate-800 pb-3 flex items-center gap-2">
                             <svg :class="['h-5 w-5 transition-colors duration-500', qrTheme.textMain]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
