@@ -159,6 +159,7 @@
 html.light,
 html.light body,
 html.light .bg-\[\#050b14\],
+html.light .bg-\[\#030712\],
 html.light .bg-slate-950 {
     background-color: #f8fafc !important;
     background-image: none !important;
