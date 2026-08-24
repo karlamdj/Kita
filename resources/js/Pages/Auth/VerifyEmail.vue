@@ -12,7 +12,9 @@ const props = defineProps({
 const form = useForm({});
 
 const submit = () => {
-    form.post(route('verification.send'));
+    form.post(route('verification.send'), {
+        preserveScroll: true,
+    });
 };
 
 const verificationLinkSent = computed(
@@ -56,30 +58,31 @@ const verificationLinkSent = computed(
                 </div>
 
                 <form @submit.prevent="submit">
-                    <div class="flex flex-col gap-4">
-                        <button
-                            type="submit"
-                            :class="[
-                                'w-full py-3 rounded-xl font-bold text-xs tracking-wider transition-all duration-300 shadow-lg cursor-pointer text-center',
-                                form.processing
-                                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
-                                    : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.3)]'
-                            ]"
-                            :disabled="form.processing"
-                        >
-                            {{ form.processing ? 'Reenviando...' : 'Reenviar Correo de Verificación' }}
-                        </button>
-
-                        <Link
-                            :href="route('logout')"
-                            method="post"
-                            as="button"
-                            class="w-full text-center text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/5 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
-                        >
-                            Cerrar Sesión
-                        </Link>
-                    </div>
+                    <button
+                        type="submit"
+                        :class="[
+                            'w-full py-3 rounded-xl font-bold text-xs tracking-wider transition-all duration-300 shadow-lg cursor-pointer text-center',
+                            form.processing
+                                ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'
+                                : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 hover:scale-[1.02] shadow-[0_0_20px_rgba(6,182,212,0.3)]'
+                        ]"
+                        :disabled="form.processing"
+                    >
+                        {{ form.processing ? 'Reenviando...' : 'Reenviar Correo de Verificación' }}
+                    </button>
                 </form>
+
+                <div class="mt-4">
+                    <Link
+                        :href="route('logout')"
+                        method="post"
+                        as="button"
+                        type="button"
+                        class="w-full text-center text-xs text-slate-500 hover:text-red-400 hover:bg-red-500/5 py-2.5 rounded-xl font-semibold transition-colors cursor-pointer"
+                    >
+                        Cerrar Sesión
+                    </Link>
+                </div>
             </div>
         </div>
     </div>
