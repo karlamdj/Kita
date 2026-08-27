@@ -29,9 +29,46 @@ class ProfileController extends Controller
             }])
             ->firstOrFail();
 
+        $this->healProfileMediaUrls($profile);
+
         return Inertia::render('Profile/Show', [
             'profile' => $profile,
         ]);
+    }
+
+    /**
+     * Auto-heal mobile share URLs to canonical URLs.
+     */
+    private function healProfileMediaUrls($profile): void
+    {
+        foreach ($profile->media as $item) {
+            if (\Illuminate\Support\Str::contains($item->url, ['/share/', 'fb.watch', 'fb.gg', 'fb.me', 'm.facebook.com'])) {
+                try {
+                    $ch = curl_init(trim($item->url));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                    curl_setopt($ch, CURLOPT_USERAGENT, 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_patched.html)');
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    $html = curl_exec($ch);
+                    $effectiveUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+                    curl_close($ch);
+
+                    if ($effectiveUrl && preg_match('/facebook\.com\/reel\/(\d+)/i', $effectiveUrl, $matches)) {
+                        $item->url = 'https://www.facebook.com/reel/' . $matches[1] . '/';
+                        $item->save();
+                    } elseif ($html && preg_match('/<meta[^>]+property=["\']og:url["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $matches)) {
+                        $ogUrl = html_entity_decode($matches[1]);
+                        if (preg_match('/(\d{10,20})/', $ogUrl, $idMatches)) {
+                            $item->url = 'https://www.facebook.com/reel/' . $idMatches[1] . '/';
+                            $item->save();
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Fail silently
+                }
+            }
+        }
     }
 
     /**

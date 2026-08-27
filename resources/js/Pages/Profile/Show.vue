@@ -168,7 +168,7 @@ const getInitials = (name) => {
 const detectPlatform = (url) => {
     if (!url) return 'unknown';
     if (/youtube\.com|youtu\.be/.test(url)) return 'youtube';
-    if (/facebook\.com|fb\.watch/.test(url)) return 'facebook';
+    if (/facebook\.com|fb\.watch|fb\.gg|fb\.me/.test(url)) return 'facebook';
     if (/instagram\.com/.test(url)) return 'instagram';
     if (/tiktok\.com/.test(url)) return 'tiktok';
     return 'unknown';
@@ -220,11 +220,11 @@ const getTikTokId = (url) => {
     return match ? match[1] : null;
 };
 
-// Extract Instagram shortcode from URL
+// Extract Instagram shortcode from URL (supports mobile app share links)
 const getInstagramShortcode = (url) => {
     if (!url) return null;
-    // Matches https://www.instagram.com/reel/C123abc/ or /p/C123abc/ or /reels/C123abc/ or /tv/C123abc/
-    const match = url.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
+    // Matches https://www.instagram.com/reel/C123abc/ or /p/C123abc/ or /reels/C123abc/ or /share/reel/C123abc/ or /tv/C123abc/
+    const match = url.match(/\/(?:p|reel|reels|share\/reel|tv)\/([A-Za-z0-9_-]+)/i);
     return match ? match[1] : null;
 };
 
@@ -234,22 +234,72 @@ const getInstagramEmbedUrl = (url) => {
     return shortcode ? `https://www.instagram.com/p/${shortcode}/embed` : null;
 };
 
-// Get Facebook embed URL
+// Get Facebook embed URL (supports mobile app share links, fb.watch, m.facebook.com)
 const getFacebookEmbedUrl = (url) => {
     if (!url) return null;
     let cleanUrl = url.trim();
 
+    // 1. Replace mobile subdomain m.facebook.com -> www.facebook.com
+    cleanUrl = cleanUrl.replace(/^https?:\/\/m\.facebook\.com/i, 'https://www.facebook.com');
+
+    // 2. Handle fb.watch shortlinks (e.g. https://fb.watch/abcdef123/)
+    if (/fb\.watch/i.test(cleanUrl)) {
+        const match = cleanUrl.match(/fb\.watch\/(?:v\/)?([A-Za-z0-9_-]+)/i);
+        if (match) {
+            cleanUrl = `https://www.facebook.com/watch/?v=${match[1]}`;
+        }
+    }
+
+    // 3. Handle fb.gg shortlinks
+    if (/fb\.gg/i.test(cleanUrl)) {
+        const match = cleanUrl.match(/fb\.gg\/(?:v\/)?([A-Za-z0-9_-]+)/i);
+        if (match) {
+            cleanUrl = `https://www.facebook.com/watch/?v=${match[1]}`;
+        }
+    }
+
     try {
         const urlObj = new URL(cleanUrl);
-        if (urlObj.pathname.includes('/watch')) {
+
+        // 4. Handle /share/r/, /share/v/, /share/p/ mobile app share URLs
+        if (urlObj.pathname.includes('/share/')) {
+            const shareMatch = urlObj.pathname.match(/\/share\/(r|v|p)\/([A-Za-z0-9_-]+)/i);
+            if (shareMatch) {
+                const type = shareMatch[1].toLowerCase();
+                const id = shareMatch[2];
+                if (type === 'r') {
+                    // Mobile Reel share -> convert to standard reel URL
+                    cleanUrl = `https://www.facebook.com/reel/${id}/`;
+                } else {
+                    // Mobile video/post share -> clean share URL without query params
+                    cleanUrl = `https://www.facebook.com/share/${type}/${id}/`;
+                }
+            }
+        }
+        // 5. Handle standard /watch URLs
+        else if (urlObj.pathname.includes('/watch')) {
             const v = urlObj.searchParams.get('v');
-            if (v) cleanUrl = `https://www.facebook.com/watch/?v=${v}`;
-        } else if (urlObj.pathname.includes('/reel/') || urlObj.pathname.includes('/reels/')) {
+            if (v) {
+                cleanUrl = `https://www.facebook.com/watch/?v=${v}`;
+            }
+        }
+        // 6. Handle standard /reel/ or /reels/ URLs
+        else if (urlObj.pathname.includes('/reel/') || urlObj.pathname.includes('/reels/')) {
             const match = urlObj.pathname.match(/\/(?:reel|reels)\/([A-Za-z0-9_-]+)/i);
-            if (match) cleanUrl = `https://www.facebook.com/reel/${match[1]}/`;
-        } else if (urlObj.pathname.includes('/videos/')) {
+            if (match) {
+                cleanUrl = `https://www.facebook.com/reel/${match[1]}/`;
+            }
+        }
+        // 7. Handle /videos/ URLs (e.g. /page/videos/123456)
+        else if (urlObj.pathname.includes('/videos/')) {
             const match = urlObj.pathname.match(/\/videos\/(\d+)/i);
-            if (match) cleanUrl = `https://www.facebook.com/watch/?v=${match[1]}`;
+            if (match) {
+                cleanUrl = `https://www.facebook.com/watch/?v=${match[1]}`;
+            }
+        } else {
+            // General cleanup: remove tracking query params like ?mibextid=... &rdid=...
+            urlObj.search = '';
+            cleanUrl = urlObj.toString();
         }
     } catch (e) {
         // Use raw url if parsing fails

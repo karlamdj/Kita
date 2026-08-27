@@ -61,11 +61,11 @@ class MediaController extends Controller
         ]);
 
         if ($request->input('type') === 'video') {
-            $url = $request->input('url');
+            $url = $this->resolveCanonicalUrl($request->input('url'));
 
             // Detect platform from URL
             $mediaType = 'youtube'; // default
-            if (Str::contains($url, ['facebook.com', 'fb.watch'])) {
+            if (Str::contains($url, ['facebook.com', 'fb.watch', 'fb.gg', 'fb.me'])) {
                 $mediaType = 'facebook';
             } elseif (Str::contains($url, ['instagram.com'])) {
                 $mediaType = 'instagram';
@@ -236,11 +236,75 @@ class MediaController extends Controller
     }
 
     /**
-     * Self-healing routine to fetch missing thumbnails for existing media items.
+     * Resolve mobile share links (e.g. facebook.com/share/r/..., fb.watch/...) to their canonical target URL.
+     */
+    private function resolveCanonicalUrl(string $url): string
+    {
+        $cleanUrl = trim($url);
+
+        if (Str::contains($cleanUrl, ['/share/', 'fb.watch', 'fb.gg', 'fb.me', 'm.facebook.com'])) {
+            try {
+                $ch = curl_init($cleanUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch, CURLOPT_USERAGENT, 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_patched.html)');
+                curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                $html = curl_exec($ch);
+                $effectiveUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+                curl_close($ch);
+
+                // 1. Check if final effective URL after redirects contains numeric reel ID or watch URL
+                if ($effectiveUrl) {
+                    if (preg_match('/facebook\.com\/reel\/(\d+)/i', $effectiveUrl, $matches)) {
+                        return 'https://www.facebook.com/reel/' . $matches[1] . '/';
+                    }
+                    if (preg_match('/facebook\.com\/watch\/\?v=(\d+)/i', $effectiveUrl, $matches)) {
+                        return 'https://www.facebook.com/watch/?v=' . $matches[1];
+                    }
+                    if (preg_match('/facebook\.com\/[^\/]+\/videos\/(\d+)/i', $effectiveUrl, $matches)) {
+                        return 'https://www.facebook.com/watch/?v=' . $matches[1];
+                    }
+                }
+
+                // 2. Check og:url meta tag in HTML
+                if ($html) {
+                    $ogUrl = null;
+                    if (preg_match('/<meta[^>]+property=["\']og:url["\'][^>]+content=["\']([^"\']+)["\']/i', $html, $matches)) {
+                        $ogUrl = html_entity_decode($matches[1]);
+                    } elseif (preg_match('/<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:url["\']/i', $html, $matches)) {
+                        $ogUrl = html_entity_decode($matches[1]);
+                    }
+
+                    if ($ogUrl) {
+                        if (preg_match('/(\d{10,20})/', $ogUrl, $idMatches)) {
+                            return 'https://www.facebook.com/reel/' . $idMatches[1] . '/';
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Fail silently
+            }
+        }
+
+        return $cleanUrl;
+    }
+
+    /**
+     * Self-healing routine to fetch missing thumbnails and canonicalize share URLs for existing media items.
      */
     private function healMediaThumbnails($media)
     {
         foreach ($media as $item) {
+            // Auto-resolve mobile share URLs to canonical URLs
+            if (Str::contains($item->url, ['/share/', 'fb.watch', 'fb.gg', 'fb.me', 'm.facebook.com'])) {
+                $canonical = $this->resolveCanonicalUrl($item->url);
+                if ($canonical !== $item->url) {
+                    $item->url = $canonical;
+                    $item->save();
+                }
+            }
+
             if (in_array($item->type, ['tiktok', 'facebook', 'instagram']) && empty($item->path)) {
                 $thumbnailPath = null;
                 $url = $item->url;
