@@ -75,7 +75,7 @@ const getPlatformLabel = (item) => {
     return labels[p] || 'Enlace de Video';
 };
 
-// Parse Video ID and generate Embed URL (YouTube only — others redirect externally)
+// Parse Video ID and generate Embed URL
 const getVideoEmbedUrl = (item) => {
     const url = item.url;
     if (!url) return null;
@@ -86,6 +86,17 @@ const getVideoEmbedUrl = (item) => {
         return match && match[2].length === 11
             ? `https://www.youtube.com/embed/${match[2]}`
             : null;
+    }
+    if (platform === 'tiktok') {
+        const match = url.match(/\/video\/(\d+)/);
+        return match ? `https://www.tiktok.com/embed/v2/${match[1]}` : null;
+    }
+    if (platform === 'instagram') {
+        const match = url.match(/\/(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/i);
+        return match ? `https://www.instagram.com/p/${match[1]}/embed` : null;
+    }
+    if (platform === 'facebook') {
+        return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false`;
     }
     return null;
 };
