@@ -96,7 +96,21 @@ const getVideoEmbedUrl = (item) => {
         return match ? `https://www.instagram.com/p/${match[1]}/embed` : null;
     }
     if (platform === 'facebook') {
-        return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false`;
+        let cleanUrl = url.trim();
+        try {
+            const urlObj = new URL(cleanUrl);
+            if (urlObj.pathname.includes('/watch')) {
+                const v = urlObj.searchParams.get('v');
+                if (v) cleanUrl = `https://www.facebook.com/watch/?v=${v}`;
+            } else if (urlObj.pathname.includes('/reel/') || urlObj.pathname.includes('/reels/')) {
+                const match = urlObj.pathname.match(/\/(?:reel|reels)\/([A-Za-z0-9_-]+)/i);
+                if (match) cleanUrl = `https://www.facebook.com/reel/${match[1]}/`;
+            } else if (urlObj.pathname.includes('/videos/')) {
+                const match = urlObj.pathname.match(/\/videos\/(\d+)/i);
+                if (match) cleanUrl = `https://www.facebook.com/watch/?v=${match[1]}`;
+            }
+        } catch (e) {}
+        return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(cleanUrl)}&show_text=false&width=325`;
     }
     return null;
 };

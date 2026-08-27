@@ -237,7 +237,25 @@ const getInstagramEmbedUrl = (url) => {
 // Get Facebook embed URL
 const getFacebookEmbedUrl = (url) => {
     if (!url) return null;
-    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(url)}&show_text=false&autoplay=true`;
+    let cleanUrl = url.trim();
+
+    try {
+        const urlObj = new URL(cleanUrl);
+        if (urlObj.pathname.includes('/watch')) {
+            const v = urlObj.searchParams.get('v');
+            if (v) cleanUrl = `https://www.facebook.com/watch/?v=${v}`;
+        } else if (urlObj.pathname.includes('/reel/') || urlObj.pathname.includes('/reels/')) {
+            const match = urlObj.pathname.match(/\/(?:reel|reels)\/([A-Za-z0-9_-]+)/i);
+            if (match) cleanUrl = `https://www.facebook.com/reel/${match[1]}/`;
+        } else if (urlObj.pathname.includes('/videos/')) {
+            const match = urlObj.pathname.match(/\/videos\/(\d+)/i);
+            if (match) cleanUrl = `https://www.facebook.com/watch/?v=${match[1]}`;
+        }
+    } catch (e) {
+        // Use raw url if parsing fails
+    }
+
+    return `https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(cleanUrl)}&show_text=false&width=325`;
 };
 
 // Get embed URL for any platform (lightbox use)
@@ -1095,16 +1113,17 @@ const toggleMusicPlay = () => {
                 <!-- ── FACEBOOK iframe embed (Reels & Videos - Vertical 9:16) ── -->
                 <div
                     v-else-if="getPlatform(activeLightboxItem) === 'facebook'"
-                    :class="['rounded-2xl border overflow-hidden shadow-2xl bg-slate-950 flex flex-col items-center justify-center', tc.lightbox_border]"
+                    :class="['rounded-2xl border overflow-hidden shadow-2xl bg-slate-950 flex flex-col items-center justify-between relative', tc.lightbox_border]"
                     style="width:325px; height:580px;"
                 >
                     <iframe
                         v-if="getFacebookEmbedUrl(activeLightboxItem.url)"
                         :src="getFacebookEmbedUrl(activeLightboxItem.url)"
-                        style="width:325px; height:580px; border:none;"
+                        style="width:325px; height:535px; border:none;"
                         frameborder="0"
                         scrolling="no"
                         allowfullscreen="true"
+                        referrerpolicy="no-referrer-when-downgrade"
                         allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                     ></iframe>
                     <!-- Fallback if URL is non-standard -->
@@ -1118,21 +1137,29 @@ const toggleMusicPlay = () => {
                             Ver en Facebook
                         </a>
                     </div>
+                    <!-- Direct Action Link bar in case Meta restricts cross-origin iframe reproduction -->
+                    <div v-if="getFacebookEmbedUrl(activeLightboxItem.url)" class="w-full h-[45px] bg-slate-900/90 border-t border-slate-800 flex items-center justify-between px-3 shrink-0">
+                        <span class="text-[10px] text-slate-400 font-medium truncate">¿No se carga el video?</span>
+                        <a :href="activeLightboxItem.url" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-[#1877F2] hover:underline flex items-center gap-1">
+                            Ver en Facebook ↗
+                        </a>
+                    </div>
                 </div>
 
                 <!-- ── INSTAGRAM iframe embed (Reels & Posts) ── -->
                 <div
                     v-else-if="getPlatform(activeLightboxItem) === 'instagram'"
-                    :class="['rounded-2xl border overflow-hidden shadow-2xl bg-slate-950 flex flex-col items-center justify-center', tc.lightbox_border]"
+                    :class="['rounded-2xl border overflow-hidden shadow-2xl bg-slate-950 flex flex-col items-center justify-between relative', tc.lightbox_border]"
                     style="width:325px; height:580px;"
                 >
                     <iframe
                         v-if="getInstagramShortcode(activeLightboxItem.url)"
                         :src="getInstagramEmbedUrl(activeLightboxItem.url)"
-                        style="width:325px; height:580px; border:none;"
+                        style="width:325px; height:535px; border:none;"
                         frameborder="0"
                         scrolling="no"
                         allowtransparency="true"
+                        referrerpolicy="no-referrer-when-downgrade"
                         allow="autoplay; clipboard-write; encrypted-media; picture-in-picture"
                     ></iframe>
                     <!-- Fallback if shortcode is not detected -->
@@ -1144,6 +1171,13 @@ const toggleMusicPlay = () => {
                         <a :href="activeLightboxItem.url" target="_blank" rel="noopener noreferrer"
                            class="bg-slate-800 border border-pink-500/40 text-white text-xs font-bold px-5 py-2.5 rounded-xl hover:bg-slate-700 transition-all">
                             Ver en Instagram
+                        </a>
+                    </div>
+                    <!-- Direct Action Link bar in case Meta restricts cross-origin iframe reproduction -->
+                    <div v-if="getInstagramShortcode(activeLightboxItem.url)" class="w-full h-[45px] bg-slate-900/90 border-t border-slate-800 flex items-center justify-between px-3 shrink-0">
+                        <span class="text-[10px] text-slate-400 font-medium truncate">¿No se carga el reel?</span>
+                        <a :href="activeLightboxItem.url" target="_blank" rel="noopener noreferrer" class="text-[10px] font-bold text-pink-400 hover:underline flex items-center gap-1">
+                            Ver en Instagram ↗
                         </a>
                     </div>
                 </div>
