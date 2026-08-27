@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\WelcomeUserMail;
 
 #[Fillable(['name', 'email', 'password', 'google_id', 'avatar'])]
 #[Hidden(['password', 'remember_token'])]
@@ -17,6 +19,14 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Send the email verification notification using KITA's branded welcome/verification email.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        Mail::to($this->email)->send(new WelcomeUserMail($this));
+    }
 
     /**
      * Get the profiles for the user.

@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -10,6 +11,8 @@ use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\URL;
 
 class WelcomeUserMail extends Mailable
 {
@@ -23,11 +26,26 @@ class WelcomeUserMail extends Mailable
     public User $user;
 
     /**
+     * The email verification URL.
+     *
+     * @var string
+     */
+    public string $verificationUrl;
+
+    /**
      * Create a new message instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, ?string $verificationUrl = null)
     {
         $this->user = $user;
+        $this->verificationUrl = $verificationUrl ?? URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+            [
+                'id' => $user->getKey(),
+                'hash' => sha1($user->getEmailForVerification()),
+            ]
+        );
     }
 
     /**
@@ -47,6 +65,9 @@ class WelcomeUserMail extends Mailable
     {
         return new Content(
             markdown: 'emails.welcome',
+            with: [
+                'verificationUrl' => $this->verificationUrl,
+            ],
         );
     }
 
@@ -60,3 +81,4 @@ class WelcomeUserMail extends Mailable
         return [];
     }
 }
+

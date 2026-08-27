@@ -3,7 +3,7 @@
 
 Con **KITA** se acabó el desorden de enviar enlaces de WhatsApp sueltos o capturas de pantalla de tus redes. A partir de ahora, tienes en tus manos tu **Tarjeta de Presentación Virtual (TPV)**, la herramienta premium diseñada para proyectar tu talento con calidad premium ante clientes, bares y festivales.
 
-<x-mail::button :url="config('app.url') . '/login'">
+<x-mail::button :url="$verificationUrl">
 Entrar a mi Mánager Virtual
 </x-mail::button>
 

@@ -34,7 +34,9 @@ class RegistrationTest extends TestCase
 
         Mail::assertSent(WelcomeUserMail::class, function (WelcomeUserMail $mail) {
             return $mail->hasTo('test@example.com') &&
-                   $mail->user->name === 'Test User';
+                   $mail->user->name === 'Test User' &&
+                   !empty($mail->verificationUrl) &&
+                   str_contains($mail->verificationUrl, 'verify-email');
         });
     }
 

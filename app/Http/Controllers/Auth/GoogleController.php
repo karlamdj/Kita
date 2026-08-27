@@ -49,6 +49,9 @@ class GoogleController extends Controller
                 'google_id' => $googleUser->getId(),
                 'avatar' => $googleUser->getAvatar(),
             ]);
+            if (!$user->hasVerifiedEmail()) {
+                $user->markEmailAsVerified();
+            }
         } else {
             // Crear nuevo usuario si no existe
             $user = User::create([
@@ -58,6 +61,7 @@ class GoogleController extends Controller
                 'avatar' => $googleUser->getAvatar(),
                 'password' => Hash::make(Str::random(24)), // Contraseña aleatoria segura
             ]);
+            $user->markEmailAsVerified();
         }
 
         // 2. Crear perfil (TPV) si no lo tiene
