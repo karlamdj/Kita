@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Mail;
+use Laravel\Sanctum\HasApiTokens;
 use App\Mail\WelcomeUserMail;
 
 #[Fillable(['name', 'email', 'password', 'google_id', 'avatar'])]
@@ -18,7 +19,7 @@ use App\Mail\WelcomeUserMail;
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * Send the email verification notification using KITA's branded welcome/verification email.
@@ -49,7 +50,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function getProfileAttribute()
     {
-        $activeId = session('active_profile_id');
+        $activeId = request()->header('X-Profile-ID') ?? request()->input('profile_id') ?? session('active_profile_id');
         if ($activeId) {
             $profile = $this->profiles()->find($activeId);
             if ($profile) {
