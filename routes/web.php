@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/dashboard/tpv/crear', [ProfileController::class, 'storeArtist'])->name('profile.store');
     Route::get('/dashboard/tpv/editar', [ProfileController::class, 'editArtist'])->name('dashboard.tpv.edit');
     Route::put('/dashboard/tpv/editar', [ProfileController::class, 'updateArtist'])->name('dashboard.tpv.update');
+    Route::patch('/dashboard/tpv/layout', [ProfileController::class, 'updateLayout'])->name('dashboard.tpv.layout');
 
     // Dashboard Calendar Routes
     Route::get('/dashboard/calendario', [EventController::class, 'index'])->name('dashboard.calendar.index');

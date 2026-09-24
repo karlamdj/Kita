@@ -368,4 +368,29 @@ class ProfileController extends Controller
 
         return Redirect::route('dashboard.tpv.edit')->with('success', '¡Perfil creado con éxito!');
     }
+
+    /**
+     * Update the TPV bento card layout configuration.
+     */
+    public function updateLayout(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $profile = $user->profile;
+
+        $request->validate([
+            'layout' => 'required|array',
+            'layout.*.id' => 'required|string',
+            'layout.*.width' => 'required|string|in:1/3,1/2,2/3,full',
+            'layout.*.enabled' => 'nullable|boolean',
+        ]);
+
+        $widgetStatus = $profile->widget_status ?? [];
+        $widgetStatus['layout'] = $request->input('layout');
+
+        $profile->update([
+            'widget_status' => $widgetStatus,
+        ]);
+
+        return redirect()->back()->with('success', 'Distribución de tarjetas guardada correctamente.');
+    }
 }

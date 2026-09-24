@@ -375,10 +375,16 @@ const updateEventsPerSlide = () => {
     }
 };
 
-// Setup resize listener
+// Setup resize listener and customization parameter check
 onMounted(() => {
     updateEventsPerSlide();
     window.addEventListener('resize', updateEventsPerSlide);
+    if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('customize') === '1' && isOwner.value) {
+            isCustomizing.value = true;
+        }
+    }
 });
 
 onUnmounted(() => {
@@ -430,24 +436,22 @@ const goToEventSlide = (index) => {
     currentEventIndex.value = index;
 };
 
-// All media unified for the grid (photos + social videos)
-const allMedia = computed(() => props.profile.media?.filter(item => {
-    // Only include photos and social video links (no local video files)
-    if (item.type === 'photo') return true;
-    const platform = detectPlatform(item.url);
-    return platform !== 'unknown';
-}) || []);
+// Media categorized by format
+const verticalMedia = computed(() => {
+    return (props.profile.media || []).filter(item => {
+        if (item.type === 'photo') return false;
+        const platform = getPlatform(item);
+        return platform === 'tiktok' || platform === 'instagram' || platform === 'facebook';
+    });
+});
 
-// Filtered media by aspect format for carousels
-const verticalMedia = computed(() => allMedia.value.filter(item => {
-    const platform = getPlatform(item);
-    return platform === 'tiktok' || platform === 'instagram' || platform === 'facebook';
-}));
-
-const horizontalMedia = computed(() => allMedia.value.filter(item => {
-    const platform = getPlatform(item);
-    return platform === 'youtube' || platform === 'vimeo' || platform === 'photo';
-}));
+const horizontalVideos = computed(() => {
+    return (props.profile.media || []).filter(item => {
+        if (item.type === 'photo') return false;
+        const platform = getPlatform(item);
+        return platform === 'youtube' || platform === 'vimeo';
+    });
+});
 
 // ─── Lightbox ──────────────────────────────────────────────────────────────────
 const activeLightboxItem = ref(null);
@@ -523,10 +527,236 @@ const goToEdit = () => {
     router.get('/dashboard/tpv/editar');
 };
 
-// Mock Music Player state
+// Mock Music Player state (used as fallback)
 const isMusicPlaying = ref(false);
 const toggleMusicPlay = () => {
     isMusicPlaying.value = !isMusicPlaying.value;
+};
+
+// ─── Spotify Official Embed Resolution ─────────────────────────────────────────
+const spotifyEmbedInfo = computed(() => {
+    const rawUrl = props.profile.widget_status?.spotify;
+    if (!rawUrl || typeof rawUrl !== 'string') return null;
+    const cleanUrl = rawUrl.trim();
+
+    // 1. Spotify URI format: spotify:(track|artist|album|playlist|episode|show):ID
+    const uriMatch = cleanUrl.match(/^spotify:(track|artist|album|playlist|episode|show):([A-Za-z0-9]+)/i);
+    if (uriMatch) {
+        const type = uriMatch[1].toLowerCase();
+        const id = uriMatch[2];
+        return {
+            url: `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`,
+            type,
+            height: type === 'track' || type === 'episode' ? 152 : 352,
+        };
+    }
+
+    // 2. Standard or international web URL: open.spotify.com/(intl-xx/)?(track|artist|album|playlist|episode|show)/ID
+    const urlMatch = cleanUrl.match(/open\.spotify\.com\/(?:intl-[a-z]{2}\/)?(track|artist|album|playlist|episode|show)\/([A-Za-z0-9]+)/i);
+    if (urlMatch) {
+        const type = urlMatch[1].toLowerCase();
+        const id = urlMatch[2];
+        return {
+            url: `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`,
+            type,
+            height: type === 'track' || type === 'episode' ? 152 : 352,
+        };
+    }
+
+    // 3. Direct embed URL
+    if (cleanUrl.includes('open.spotify.com/embed/')) {
+        const isCompact = cleanUrl.includes('/track/') || cleanUrl.includes('/episode/');
+        return {
+            url: cleanUrl,
+            type: isCompact ? 'track' : 'artist',
+            height: isCompact ? 152 : 352,
+        };
+    }
+
+    return null;
+});
+
+// ─── Bento Grid Modular Layout System ─────────────────────────────────────────
+const CARD_DEFINITIONS = {
+    music: {
+        id: 'music',
+        title: 'Música Destacada',
+        icon: '🎵',
+        subtitle: 'Spotify Player',
+    },
+    calendar: {
+        id: 'calendar',
+        title: 'Próximas Presentaciones',
+        icon: '📅',
+        subtitle: 'Fechas y Disponibilidad',
+    },
+    social_videos: {
+        id: 'social_videos',
+        title: 'Reels & TikToks',
+        icon: '📱',
+        subtitle: 'Videos Verticales (9:16)',
+    },
+    youtube_videos: {
+        id: 'youtube_videos',
+        title: 'Videos & En Vivo',
+        icon: '🎬',
+        subtitle: 'YouTube y Conciertos (16:9)',
+    },
+    photos: {
+        id: 'photos',
+        title: 'Galería Fotográfica',
+        icon: '📸',
+        subtitle: 'Fotos de Promoción',
+    },
+};
+
+const DEFAULT_CARDS = [
+    { id: 'music', width: '1/2', enabled: true },
+    { id: 'calendar', width: '1/2', enabled: true },
+    { id: 'social_videos', width: '1/2', enabled: true },
+    { id: 'youtube_videos', width: '1/2', enabled: true },
+    { id: 'photos', width: 'full', enabled: true },
+];
+
+const initializeLayout = () => {
+    const saved = props.profile.widget_status?.layout;
+    if (Array.isArray(saved) && saved.length > 0) {
+        const savedIds = new Set(saved.map(c => c.id));
+        const merged = saved.map(c => ({
+            id: c.id,
+            width: c.width || '1/2',
+            enabled: c.enabled !== false,
+        }));
+        DEFAULT_CARDS.forEach(def => {
+            if (!savedIds.has(def.id)) {
+                merged.push({ ...def });
+            }
+        });
+        return merged;
+    }
+    return DEFAULT_CARDS.map(c => ({ ...c }));
+};
+
+const currentCards = ref(initializeLayout());
+const isCustomizing = ref(false);
+const isSavingLayout = ref(false);
+
+const toggleCustomizing = () => {
+    isCustomizing.value = !isCustomizing.value;
+};
+
+const getCardDef = (id) => CARD_DEFINITIONS[id] || { id, title: id, icon: '📦', subtitle: '' };
+
+const getWidthLabel = (width) => {
+    switch (width) {
+        case '1/3': return '1/3';
+        case '1/2': return '1/2';
+        case '2/3': return '2/3';
+        case 'full': return '100%';
+        default: return width;
+    }
+};
+
+const getCardGridClass = (width) => {
+    switch (width) {
+        case '1/3': return 'col-span-12 md:col-span-6 lg:col-span-4';
+        case '1/2': return 'col-span-12 lg:col-span-6';
+        case '2/3': return 'col-span-12 lg:col-span-8';
+        case 'full':
+        default: return 'col-span-12';
+    }
+};
+
+const cardHasContent = (cardId) => {
+    switch (cardId) {
+        case 'music':
+            return Boolean(props.profile.widget_status?.spotify);
+        case 'calendar':
+            return Boolean(props.profile.widget_status?.agenda !== false && upcomingEvents.value.length > 0);
+        case 'social_videos':
+            return verticalMedia.value.length > 0;
+        case 'youtube_videos':
+            return horizontalVideos.value.length > 0;
+        case 'photos':
+            return photos.value.length > 0;
+        default:
+            return false;
+    }
+};
+
+const cardShouldRender = (card) => {
+    if (isCustomizing.value) return true;
+    return card.enabled !== false && cardHasContent(card.id);
+};
+
+const moveCard = (index, direction) => {
+    const target = index + direction;
+    if (target < 0 || target >= currentCards.value.length) return;
+    const cards = [...currentCards.value];
+    const item = cards.splice(index, 1)[0];
+    cards.splice(target, 0, item);
+    currentCards.value = cards;
+};
+
+const setCardWidth = (cardId, width) => {
+    const card = currentCards.value.find(c => c.id === cardId);
+    if (card) {
+        card.width = width;
+    }
+};
+
+const toggleCardEnabled = (cardId) => {
+    const card = currentCards.value.find(c => c.id === cardId);
+    if (card) {
+        card.enabled = !card.enabled;
+    }
+};
+
+// Drag & drop support
+const draggedCardIndex = ref(null);
+const onCardDragStart = (index, e) => {
+    draggedCardIndex.value = index;
+    if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+    }
+};
+const onCardDragOver = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'move';
+    }
+};
+const onCardDrop = (targetIndex) => {
+    if (draggedCardIndex.value === null || draggedCardIndex.value === targetIndex) return;
+    const cards = [...currentCards.value];
+    const moved = cards.splice(draggedCardIndex.value, 1)[0];
+    cards.splice(targetIndex, 0, moved);
+    currentCards.value = cards;
+    draggedCardIndex.value = null;
+};
+
+const saveLayout = () => {
+    isSavingLayout.value = true;
+    router.patch(route('dashboard.tpv.layout'), {
+        layout: currentCards.value.map(c => ({
+            id: c.id,
+            width: c.width || '1/2',
+            enabled: c.enabled !== false,
+        }))
+    }, {
+        preserveScroll: true,
+        onSuccess: () => {
+            isSavingLayout.value = false;
+            isCustomizing.value = false;
+        },
+        onError: () => {
+            isSavingLayout.value = false;
+        }
+    });
+};
+
+const resetDefaultLayout = () => {
+    currentCards.value = DEFAULT_CARDS.map(c => ({ ...c }));
 };
 </script>
 
@@ -538,14 +768,53 @@ const toggleMusicPlay = () => {
         <!-- Reusable Global Navbar -->
         <Navbar />
 
-        <!-- Conditional Edit Profile Button for TPV Owner (Placed in the top right corner, below the Navbar) -->
-        <div v-if="isOwner" class="absolute top-20 right-4 z-40 sm:right-6 lg:right-8">
+        <!-- Conditional Owner Action Buttons (Edit Profile & Customize Cards Layout) -->
+        <div v-if="isOwner" class="absolute top-20 right-4 z-40 sm:right-6 lg:right-8 flex items-center gap-2">
+            <button
+                @click="toggleCustomizing"
+                :class="[
+                    'border px-3.5 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center select-none',
+                    isCustomizing 
+                        ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-extrabold shadow-[0_0_20px_rgba(6,182,212,0.5)]' 
+                        : 'bg-slate-900/90 hover:bg-slate-800 border-slate-800 text-cyan-400 hover:border-cyan-500/50'
+                ]"
+                :title="isCustomizing ? 'Cerrar modo personalización' : 'Organizar y redimensionar tarjetas'"
+            >
+                <span>{{ isCustomizing ? '✕ Salir' : '🎨 Personalizar Tarjetas' }}</span>
+            </button>
             <button
                 @click="goToEdit"
                 :class="['bg-slate-900/90 hover:bg-slate-800 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center', tc.edit_btn]"
             >
                 <span>✏️</span> Editar Perfil
             </button>
+        </div>
+
+        <!-- Floating Sticky Toolbar when Customizing Layout -->
+        <div v-if="isOwner && isCustomizing" class="fixed bottom-6 inset-x-4 max-w-2xl mx-auto z-50 bg-slate-900/95 backdrop-blur-xl border border-cyan-500/40 rounded-2xl p-4 shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex flex-wrap items-center justify-between gap-3 animate-bounce-in">
+            <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+                <div>
+                    <p class="text-xs font-extrabold text-white">Modo de Organización de Tarjetas</p>
+                    <p class="text-[11px] text-slate-400">Reordena con ⬅️ ➡️ y ajusta el ancho de cada tarjeta (1/3, 1/2, 2/3, Full).</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 ml-auto">
+                <button
+                    @click="resetDefaultLayout"
+                    class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold border border-slate-700 transition-colors"
+                >
+                    Restablecer
+                </button>
+                <button
+                    @click="saveLayout"
+                    :disabled="isSavingLayout"
+                    class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all hover:scale-105 flex items-center gap-1.5 cursor-pointer"
+                >
+                    <span v-if="isSavingLayout">Guardando...</span>
+                    <span v-else>💾 Guardar Distribución</span>
+                </button>
+            </div>
         </div>
 
         <!-- Ambient Decorative Glowing Blobs (theme-driven) -->
@@ -732,383 +1001,454 @@ const toggleMusicPlay = () => {
 
             </div>
 
-            <!-- 2. WIDGETS SECTION (Deep-blue space glass bento cards below the Hero) -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mt-4">
-                
-                <!-- WIDGETS LEFT: Music widget (top) + Gallery widget (below) — col-span-7 -->
-                <div class="grid grid-cols-1 gap-8 lg:col-span-7">
-                    
-                    <!-- MUSIC WIDGET (Deep space glassmorphism) -->
-                    <section
-                        v-if="profile.widget_status?.spotify"
-                        :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 shadow-xl relative overflow-hidden group transition-all duration-300 border', tc.widget_card]"
+            <!-- 2. MODULAR BENTO GRID SECTION (Dynamic reorderable & resizable cards) -->
+            <div class="grid grid-cols-12 gap-6 lg:gap-8 items-start mt-6">
+                <template v-for="(card, index) in currentCards" :key="card.id">
+                    <div
+                        v-if="cardShouldRender(card)"
+                        :class="[getCardGridClass(card.width), 'transition-all duration-350 relative']"
+                        :draggable="isCustomizing"
+                        @dragstart="onCardDragStart(index, $event)"
+                        @dragover="onCardDragOver($event)"
+                        @drop="onCardDrop(index)"
                     >
-                        <div class="flex items-center gap-3 mb-6">
-                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
-                                Música Destacada
-                            </h3>
-                        </div>
-
-                        <!-- Custom Premium Player Card UI -->
-                        <div class="bg-slate-950/80 border border-slate-850 rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-5 shadow-inner relative group/player overflow-hidden">
-                            <!-- Overlay light source -->
-                            <div class="absolute inset-0 bg-gradient-to-tr from-purple-500/5 via-transparent to-transparent opacity-0 group-hover/player:opacity-100 transition-opacity duration-500"></div>
-
-                            <!-- Vinyl artwork -->
-                            <div :class="['w-24 h-24 rounded-2xl bg-gradient-to-tr flex items-center justify-center shrink-0 relative overflow-hidden group-hover/player:scale-105 transition-all duration-500 select-none', tc.vinyl, tc.vinyl_shadow]">
-                                <div class="absolute inset-2 rounded-full border border-white/20 flex items-center justify-center bg-slate-950/95 animate-[spin_10s_linear_infinite]" :class="{ 'paused': !isMusicPlaying }">
-                                    <!-- Center Vinyl label -->
-                                    <div :class="['w-6 h-6 rounded-full bg-gradient-to-tr flex items-center justify-center text-[8px] font-black text-slate-950', tc.vinyl_center]">
-                                        {{ getInitials(profile.name) }}
+                        <!-- Card Container with Theme-Driven Styling -->
+                        <section
+                            :class="[
+                                'bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 sm:p-7 shadow-xl relative overflow-hidden group transition-all duration-300 border flex flex-col justify-between h-full',
+                                tc.widget_card,
+                                isCustomizing ? 'ring-2 ring-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)]' : ''
+                            ]"
+                        >
+                            <div>
+                                <!-- Customization Tool Strip on top of card -->
+                                <div v-if="isCustomizing" class="mb-5 pb-3 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 bg-slate-950/70 p-3 rounded-2xl border border-cyan-500/20 select-none">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-base">{{ getCardDef(card.id).icon }}</span>
+                                        <span class="text-xs font-black text-white">{{ getCardDef(card.id).title }}</span>
+                                        <span class="text-[10px] font-bold text-cyan-400 px-2 py-0.5 rounded-full bg-cyan-950/60 border border-cyan-500/30">
+                                            {{ getWidthLabel(card.width) }}
+                                        </span>
                                     </div>
-                                </div>
-                            </div>
 
-                            <!-- Track details -->
-                            <div class="flex-1 w-full min-w-0">
-                                <h4 class="text-base font-extrabold text-white truncate leading-tight group-hover/player:text-purple-300 transition-colors">
-                                    {{ profile.name }} Showcase
-                                </h4>
-                                <p class="text-xs text-purple-400/80 font-bold mt-1 truncate">Música original y covers destacados</p>
-                                
-                                <!-- Progress Bar -->
-                                <div class="mt-4">
-                                    <div class="w-full h-1 bg-slate-900 border border-slate-800 rounded-full overflow-hidden relative">
-                                        <div 
-                                            :class="['h-full bg-gradient-to-r rounded-full', tc.progress_bar, isMusicPlaying ? 'w-[45%] transition-all duration-[8000ms] ease-out' : 'w-[12%] transition-all duration-500']"
-                                        ></div>
-                                    </div>
-                                    <div class="flex justify-between text-[10px] text-slate-500 font-bold mt-1.5">
-                                        <span>{{ isMusicPlaying ? '01:34' : '00:15' }}</span>
-                                        <span>03:45</span>
-                                    </div>
-                                </div>
-                            </div>
+                                    <div class="flex items-center gap-1.5 ml-auto">
+                                        <!-- Move Left / Up -->
+                                        <button
+                                            @click.stop="moveCard(index, -1)"
+                                            :disabled="index === 0"
+                                            class="p-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-25 disabled:cursor-not-allowed text-xs transition-colors border border-slate-700 font-bold cursor-pointer"
+                                            title="Mover antes"
+                                        >
+                                            ⬅️
+                                        </button>
+                                        <!-- Move Right / Down -->
+                                        <button
+                                            @click.stop="moveCard(index, 1)"
+                                            :disabled="index === currentCards.length - 1"
+                                            class="p-1.5 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-25 disabled:cursor-not-allowed text-xs transition-colors border border-slate-700 font-bold cursor-pointer"
+                                            title="Mover después"
+                                        >
+                                            ➡️
+                                        </button>
 
-                            <!-- Circular Glowing Play Button -->
-                            <button
-                                @click="toggleMusicPlay"
-                                :class="['w-14 h-14 rounded-full bg-gradient-to-r text-slate-950 flex items-center justify-center shrink-0 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none group/btn', tc.play_btn]"
-                            >
-                                <svg v-if="!isMusicPlaying" class="h-6 w-6 fill-slate-950 translate-x-0.5 group-hover/btn:scale-105 transition-transform" viewBox="0 0 24 24">
-                                    <path d="M8 5v14l11-7z"/>
-                                </svg>
-                                <svg v-else class="h-6 w-6 fill-slate-950 group-hover/btn:scale-105 transition-transform" viewBox="0 0 24 24">
-                                    <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-                                </svg>
-                            </button>
-                        </div>
-
-                        <!-- Spotify complete link -->
-                        <div class="mt-4 flex justify-end">
-                            <a
-                                :href="profile.widget_status.spotify"
-                                target="_blank"
-                                :class="['text-xs font-bold flex items-center gap-1.5 transition-colors', tc.spotify_link]"
-                            >
-                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 0C5.373 0 0 5.372 0 12s5.373 12 12 12 12-5.372 12-12S18.627 0 12 0zm5.49 17.3c-.22.36-.685.478-1.045.258-2.868-1.752-6.48-2.15-10.732-1.176-.41.096-.82-.163-.918-.574-.097-.41.162-.82.573-.917 4.653-1.064 8.628-.606 11.865 1.373.36.22.477.685.257 1.045zm1.464-3.262c-.277.45-.86.598-1.31.32-3.284-2.02-8.293-2.607-12.177-1.428-.506.153-1.04-.136-1.194-.643-.154-.506.136-1.04.643-1.194 4.432-1.345 9.947-.694 13.718 1.63.45.276.598.86.32 1.31zm.126-3.414C15.114 8.27 8.57 8.053 4.78 9.203c-.59.18-1.21-.15-1.39-.74-.18-.59.15-1.21.74-1.39 4.35-1.32 11.56-1.07 16.1 1.62.53.31.7.99.39 1.52-.31.53-.99.7-1.52.39z"/>
-                                </svg>
-                                Escuchar perfil en Spotify completo
-                            </a>
-                        </div>
-                    </section>
-
-
-                </div>
-
-                <!-- WIDGETS RIGHT: Próximas Presentaciones — col-span-5, to the RIGHT of Music -->
-                <div class="grid grid-cols-1 gap-8 lg:col-span-5">
-                    
-                    <!-- SHOWS WIDGET (Deep space glassmorphism with Carousel) -->
-                    <section
-                        v-if="profile.widget_status?.agenda !== false && upcomingEvents.length > 0"
-                        :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 shadow-xl relative overflow-hidden group transition-all duration-300 border', tc.widget_card]"
-                    >
-                        <div class="flex items-center justify-between mb-6">
-                            <div class="flex items-center gap-3">
-                                <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                                <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
-                                    Próximas Presentaciones
-                                </h3>
-                            </div>
-                            
-                            <!-- Carousel Navigation Arrows (only show if more than 2 events on desktop or more than 1 on mobile) -->
-                            <div v-if="totalEventSlides > 1" class="flex items-center gap-2">
-                                <button
-                                    @click="prevEvents"
-                                    :class="['p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-500/30 transition-all duration-300', tc.social_icon]"
-                                    aria-label="Eventos anteriores"
-                                >
-                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                                    </svg>
-                                </button>
-                                <button
-                                    @click="nextEvents"
-                                    :class="['p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-500/30 transition-all duration-300', tc.social_icon]"
-                                    aria-label="Eventos siguientes"
-                                >
-                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Carousel Container with slide transition -->
-                        <div class="relative overflow-hidden -mx-6 px-6">
-                            <div 
-                                class="flex transition-transform duration-500 ease-in-out"
-                                :style="{ transform: `translateX(calc(-${currentEventIndex * 100}%))` }"
-                            >
-                                <div
-                                    v-for="(slideEvents, slideIndex) in eventSlides"
-                                    :key="`slide-${slideIndex}`"
-                                    class="w-full flex-shrink-0 flex flex-col gap-4 px-0"
-                                >
-                                    <div
-                                        v-for="event in slideEvents"
-                                        :key="event.id"
-                                        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-950/80 border border-slate-850 p-4 rounded-2xl overflow-hidden group/gig hover:border-purple-500/30 transition-all duration-300"
-                                    >
-                                        <!-- Date Badge (Concert ticket notch feel) -->
-                                        <div :class="['bg-gradient-to-br text-white w-14 py-3 rounded-2xl shrink-0 flex flex-col items-center justify-center font-black leading-none text-center shadow-lg relative', tc.event_badge]">
-                                            <!-- Ticket notches -->
-                                            <div class="absolute top-1/2 -left-1.5 w-3 h-3 bg-slate-950 border-r border-slate-850 rounded-full shrink-0"></div>
-                                            <div class="absolute top-1/2 -right-1.5 w-3 h-3 bg-slate-950 border-l border-slate-850 rounded-full shrink-0"></div>
-                                            
-                                            <span class="text-[9px] uppercase font-bold text-white/80 tracking-wider">
-                                                {{ formatEventDate(event.start_time).split(' ')[1] }}
-                                            </span>
-                                            <span class="text-xl font-black mt-0.5">
-                                                {{ formatEventDate(event.start_time).split(' ')[0] }}
-                                            </span>
+                                        <!-- Width selectors -->
+                                        <div class="flex items-center rounded-xl bg-slate-900 p-0.5 border border-slate-800 ml-1">
+                                            <button
+                                                v-for="w in ['1/3', '1/2', '2/3', 'full']"
+                                                :key="w"
+                                                @click.stop="setCardWidth(card.id, w)"
+                                                :class="[
+                                                    'px-2 py-1 text-[10px] font-black rounded-lg transition-all cursor-pointer',
+                                                    card.width === w ? 'bg-cyan-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'
+                                                ]"
+                                                :title="`Tamaño: ${getWidthLabel(w)}`"
+                                            >
+                                                {{ w === 'full' ? 'Full' : w }}
+                                            </button>
                                         </div>
+                                    </div>
+                                </div>
 
-                                        <!-- Gigs Details -->
-                                        <div class="min-w-0 flex-1">
-                                            <h4 class="text-base font-extrabold text-white leading-tight truncate group-hover/gig:text-purple-300 transition-colors">
-                                                {{ event.title }}
+                                <!-- CARD 1: MUSIC -->
+                                <template v-if="card.id === 'music'">
+                                    <div class="flex items-center justify-between mb-5">
+                                        <div class="flex items-center gap-3">
+                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                                Música Destacada
+                                            </h3>
+                                        </div>
+                                        <span v-if="spotifyEmbedInfo" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#1DB954]/10 text-[#1DB954] border border-[#1DB954]/20 shadow-[0_0_12px_rgba(29,185,84,0.15)]">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-[#1DB954] animate-pulse"></span>
+                                            Spotify Player
+                                        </span>
+                                    </div>
+
+                                    <!-- Real Spotify Embed -->
+                                    <div v-if="spotifyEmbedInfo" class="rounded-2xl overflow-hidden shadow-2xl border border-slate-800/80 bg-slate-950/80 transition-all duration-300">
+                                        <iframe
+                                            :src="spotifyEmbedInfo.url"
+                                            width="100%"
+                                            :height="spotifyEmbedInfo.height"
+                                            frameBorder="0"
+                                            allowfullscreen=""
+                                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                                            loading="lazy"
+                                            class="w-full block"
+                                            style="border-radius: 16px;"
+                                        ></iframe>
+                                    </div>
+
+                                    <!-- Fallback Player if link cannot be parsed to embed -->
+                                    <div v-else-if="profile.widget_status?.spotify" class="bg-slate-950/80 border border-slate-850 rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-5 shadow-inner relative group/player overflow-hidden">
+                                        <div :class="['w-24 h-24 rounded-2xl bg-gradient-to-tr flex items-center justify-center shrink-0 relative overflow-hidden group-hover/player:scale-105 transition-all duration-500 select-none', tc.vinyl, tc.vinyl_shadow]">
+                                            <div class="absolute inset-2 rounded-full border border-white/20 flex items-center justify-center bg-slate-950/95 animate-[spin_10s_linear_infinite]" :class="{ 'paused': !isMusicPlaying }">
+                                                <div :class="['w-6 h-6 rounded-full bg-gradient-to-tr flex items-center justify-center text-[8px] font-black text-slate-950', tc.vinyl_center]">
+                                                    {{ getInitials(profile.name) }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-1 w-full min-w-0">
+                                            <h4 class="text-base font-extrabold text-white truncate leading-tight group-hover/player:text-purple-300 transition-colors">
+                                                {{ profile.name }} Showcase
                                             </h4>
-                                            
-                                            <div class="flex flex-wrap items-center gap-3 mt-1.5">
-                                                <p class="text-xs text-slate-400 truncate flex items-center gap-1">
-                                                    <svg class="h-3.5 w-3.5 text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                    </svg>
-                                                    {{ event.location }}
-                                                </p>
-                                                <p class="text-xs text-slate-500 font-semibold flex items-center gap-1">
-                                                    <svg class="h-3.5 w-3.5 text-pink-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                    </svg>
-                                                    {{ formatEventTime(event.start_time) }}
+                                            <p class="text-xs text-purple-400/80 font-bold mt-1 truncate">Música original y covers destacados</p>
+                                            <div class="mt-4">
+                                                <div class="w-full h-1 bg-slate-900 border border-slate-800 rounded-full overflow-hidden relative">
+                                                    <div :class="['h-full bg-gradient-to-r rounded-full', tc.progress_bar, isMusicPlaying ? 'w-[45%] transition-all duration-[8000ms] ease-out' : 'w-[12%] transition-all duration-500']"></div>
+                                                </div>
+                                                <div class="flex justify-between text-[10px] text-slate-500 font-bold mt-1.5">
+                                                    <span>{{ isMusicPlaying ? '01:34' : '00:15' }}</span>
+                                                    <span>03:45</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button
+                                            @click="toggleMusicPlay"
+                                            :class="['w-14 h-14 rounded-full bg-gradient-to-r text-slate-950 flex items-center justify-center shrink-0 hover:scale-110 active:scale-95 transition-all duration-300 cursor-pointer select-none group/btn', tc.play_btn]"
+                                        >
+                                            <svg v-if="!isMusicPlaying" class="h-6 w-6 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                            <svg v-else class="h-6 w-6 fill-slate-950" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Empty state when customizing -->
+                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                        <p class="text-xs text-slate-400">Sin enlace de Spotify configurado aún.</p>
+                                        <p class="text-[11px] text-slate-500 mt-1">Configúralo en la edición del perfil para activar el reproductor.</p>
+                                    </div>
+
+                                    <!-- Direct Spotify link -->
+                                    <div v-if="profile.widget_status?.spotify" class="mt-4 flex justify-end">
+                                        <a
+                                            :href="profile.widget_status.spotify"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            :class="['text-xs font-bold flex items-center gap-1.5 transition-colors', tc.spotify_link]"
+                                        >
+                                            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 0C5.373 0 0 5.372 0 12s5.373 12 12 12 12-5.372 12-12S18.627 0 12 0zm5.49 17.3c-.22.36-.685.478-1.045.258-2.868-1.752-6.48-2.15-10.732-1.176-.41.096-.82-.163-.918-.574-.097-.41.162-.82.573-.917 4.653-1.064 8.628-.606 11.865 1.373.36.22.477.685.257 1.045zm1.464-3.262c-.277.45-.86.598-1.31.32-3.284-2.02-8.293-2.607-12.177-1.428-.506.153-1.04-.136-1.194-.643-.154-.506.136-1.04.643-1.194 4.432-1.345 9.947-.694 13.718 1.63.45.276.598.86.32 1.31zm.126-3.414C15.114 8.27 8.57 8.053 4.78 9.203c-.59.18-1.21-.15-1.39-.74-.18-.59.15-1.21.74-1.39 4.35-1.32 11.56-1.07 16.1 1.62.53.31.7.99.39 1.52-.31.53-.99.7-1.52.39z"/>
+                                            </svg>
+                                            Escuchar en Spotify
+                                        </a>
+                                    </div>
+                                </template>
+
+                                <!-- CARD 2: CALENDAR -->
+                                <template v-else-if="card.id === 'calendar'">
+                                    <div class="flex items-center justify-between mb-5">
+                                        <div class="flex items-center gap-3">
+                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                                Próximas Presentaciones
+                                            </h3>
+                                        </div>
+                                        <div v-if="totalEventSlides > 1" class="flex items-center gap-2">
+                                            <button
+                                                @click="prevEvents"
+                                                :class="['p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-500/30 transition-all duration-300 cursor-pointer', tc.social_icon]"
+                                                aria-label="Eventos anteriores"
+                                            >
+                                                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                @click="nextEvents"
+                                                :class="['p-2 rounded-lg bg-slate-900/60 border border-slate-800 hover:border-cyan-500/30 transition-all duration-300 cursor-pointer', tc.social_icon]"
+                                                aria-label="Eventos siguientes"
+                                            >
+                                                <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div v-if="upcomingEvents.length > 0" class="relative overflow-hidden -mx-2 px-2">
+                                        <div 
+                                            class="flex transition-transform duration-500 ease-in-out"
+                                            :style="{ transform: `translateX(calc(-${currentEventIndex * 100}%))` }"
+                                        >
+                                            <div
+                                                v-for="(slideEvents, slideIndex) in eventSlides"
+                                                :key="`slide-${slideIndex}`"
+                                                class="w-full flex-shrink-0 flex flex-col gap-4 px-0"
+                                            >
+                                                <div
+                                                    v-for="event in slideEvents"
+                                                    :key="event.id"
+                                                    class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-slate-950/80 border border-slate-850 p-4 rounded-2xl overflow-hidden group/gig hover:border-purple-500/30 transition-all duration-300"
+                                                >
+                                                    <div :class="['bg-gradient-to-br text-white w-14 py-3 rounded-2xl shrink-0 flex flex-col items-center justify-center font-black leading-none text-center shadow-lg relative', tc.event_badge]">
+                                                        <div class="absolute top-1/2 -left-1.5 w-3 h-3 bg-slate-950 border-r border-slate-850 rounded-full shrink-0"></div>
+                                                        <div class="absolute top-1/2 -right-1.5 w-3 h-3 bg-slate-950 border-l border-slate-850 rounded-full shrink-0"></div>
+                                                        <span class="text-[9px] uppercase font-bold text-white/80 tracking-wider">
+                                                            {{ formatEventDate(event.start_time).split(' ')[1] }}
+                                                        </span>
+                                                        <span class="text-xl font-black mt-0.5">
+                                                            {{ formatEventDate(event.start_time).split(' ')[0] }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="min-w-0 flex-1">
+                                                        <h4 class="text-base font-extrabold text-white leading-tight truncate group-hover/gig:text-purple-300 transition-colors">
+                                                            {{ event.title }}
+                                                        </h4>
+                                                        <div class="flex flex-wrap items-center gap-3 mt-1.5">
+                                                            <p class="text-xs text-slate-400 truncate flex items-center gap-1">
+                                                                <svg class="h-3.5 w-3.5 text-purple-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                                </svg>
+                                                                {{ event.location }}
+                                                            </p>
+                                                            <p class="text-xs text-slate-500 font-semibold flex items-center gap-1">
+                                                                <svg class="h-3.5 w-3.5 text-pink-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                </svg>
+                                                                {{ formatEventTime(event.start_time) }}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div class="w-full sm:w-auto flex justify-end shrink-0">
+                                                        <a
+                                                            :href="getWhatsAppUrl(event.title)"
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            :class="['bg-slate-900 border border-slate-800 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer shadow-md select-none w-full sm:w-auto text-center', tc.event_cta]"
+                                                        >
+                                                            Adquirir Accesos
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div v-if="totalEventSlides > 1" class="flex items-center justify-center gap-2 mt-5">
+                                            <button
+                                                v-for="(slide, sIndex) in totalEventSlides"
+                                                :key="`dot-${sIndex}`"
+                                                @click="goToEventSlide(sIndex)"
+                                                :class="[
+                                                    'transition-all duration-300 rounded-full cursor-pointer',
+                                                    currentEventIndex === sIndex 
+                                                        ? 'w-8 h-2 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]' 
+                                                        : 'w-2 h-2 bg-slate-700 hover:bg-slate-600'
+                                                ]"
+                                                :aria-label="`Ir a eventos ${sIndex + 1}`"
+                                            ></button>
+                                        </div>
+                                    </div>
+                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                        <p class="text-xs text-slate-400">Sin presentaciones programadas actualmente.</p>
+                                        <p class="text-[11px] text-slate-500 mt-1">Agrega fechas en tu calendario para mostrarlas aquí.</p>
+                                    </div>
+                                </template>
+
+                                <!-- CARD 3: SOCIAL VIDEOS (TikTok / Instagram / Facebook Reels - 9:16) -->
+                                <template v-else-if="card.id === 'social_videos'">
+                                    <div class="flex items-center justify-between mb-5">
+                                        <div class="flex items-center gap-3">
+                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                                Reels &amp; TikToks
+                                            </h3>
+                                        </div>
+                                        <span v-if="verticalMedia.length > 0" class="text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
+                                            {{ verticalMedia.length }} videos
+                                        </span>
+                                    </div>
+
+                                    <div v-if="verticalMedia.length > 0" class="relative w-full">
+                                        <div class="flex gap-4 overflow-x-auto py-2 scroll-smooth snap-x snap-mandatory scrollbar-hide">
+                                            <div
+                                                v-for="item in verticalMedia"
+                                                :key="item.id"
+                                                @click="openLightbox(item)"
+                                                class="snap-start shrink-0 w-[170px] sm:w-[200px] aspect-[9/16] relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/40 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md"
+                                            >
+                                                <!-- Instagram -->
+                                                <template v-if="getPlatform(item) === 'instagram'">
+                                                    <img v-if="getThumbnail(item)" :src="getThumbnail(item)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Instagram" />
+                                                    <div v-else class="w-full h-full bg-gradient-to-tr from-pink-950/60 via-purple-950/40 to-orange-950/40 flex flex-col items-center justify-center gap-3 p-4">
+                                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none">
+                                                            <defs><linearGradient id="ig-grad-bento" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="50%" stop-color="#dc2743"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
+                                                            <rect width="24" height="24" rx="6" fill="url(#ig-grad-bento)"/>
+                                                            <path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.75A2.25 2.25 0 1112 9.75a2.25 2.25 0 010 4.5zM16 8a.75.75 0 100-1.5.75.75 0 000 1.5z" fill="white"/>
+                                                            <path fill-rule="evenodd" d="M8 3h8a5 5 0 015 5v8a5 5 0 01-5 5H8a5 5 0 01-5-5V8a5 5 0 015-5zm0 1.5A3.5 3.5 0 004.5 8v8A3.5 3.5 0 008 19.5h8a3.5 3.5 0 003.5-3.5V8A3.5 3.5 0 0016 4.5H8z" fill="white"/>
+                                                        </svg>
+                                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Reel de Instagram' }}</p>
+                                                    </div>
+                                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                        </div>
+                                                    </div>
+                                                    <div class="absolute top-2 right-2 bg-pink-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">IG</div>
+                                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Reel de Instagram' }}</p>
+                                                    </div>
+                                                </template>
+
+                                                <!-- TikTok -->
+                                                <template v-else-if="getPlatform(item) === 'tiktok'">
+                                                    <img v-if="getThumbnail(item)" :src="getThumbnail(item)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="TikTok" />
+                                                    <div v-else class="w-full h-full bg-gradient-to-b from-slate-950 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
+                                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
+                                                            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" class="fill-[#69C9D0]"/>
+                                                            <path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" class="fill-[#EE1D52]"/>
+                                                        </svg>
+                                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de TikTok' }}</p>
+                                                    </div>
+                                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-[#EE1D52]/50 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                        </div>
+                                                    </div>
+                                                    <div class="absolute top-2 right-2 bg-slate-900/90 text-[#EE1D52] border border-[#EE1D52]/50 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">TT</div>
+                                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Video de TikTok' }}</p>
+                                                    </div>
+                                                </template>
+
+                                                <!-- Facebook -->
+                                                <template v-else-if="getPlatform(item) === 'facebook'">
+                                                    <img v-if="getThumbnail(item)" :src="getThumbnail(item)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="Facebook" />
+                                                    <div v-else class="w-full h-full bg-gradient-to-tr from-blue-950/60 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
+                                                        <svg class="h-10 w-10 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de Facebook' }}</p>
+                                                    </div>
+                                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                                        <div class="w-10 h-10 rounded-full bg-[#1877F2]/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
+                                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                        </div>
+                                                    </div>
+                                                    <div class="absolute top-2 right-2 bg-[#1877F2]/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">FB</div>
+                                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Video de Facebook' }}</p>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                        <p class="text-xs text-slate-400">Sin reels o videos verticales aún.</p>
+                                        <p class="text-[11px] text-slate-500 mt-1">Agrega enlaces de TikTok o Instagram en tu panel de medios.</p>
+                                    </div>
+                                </template>
+
+                                <!-- CARD 4: YOUTUBE VIDEOS (16:9) -->
+                                <template v-else-if="card.id === 'youtube_videos'">
+                                    <div class="flex items-center justify-between mb-5">
+                                        <div class="flex items-center gap-3">
+                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                                Videos &amp; En Vivo
+                                            </h3>
+                                        </div>
+                                        <span v-if="horizontalVideos.length > 0" class="text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
+                                            {{ horizontalVideos.length }} videos
+                                        </span>
+                                    </div>
+
+                                    <div v-if="horizontalVideos.length > 0" class="relative w-full">
+                                        <div class="flex gap-4 overflow-x-auto py-2 scroll-smooth snap-x snap-mandatory scrollbar-hide">
+                                            <div
+                                                v-for="item in horizontalVideos"
+                                                :key="item.id"
+                                                @click="openLightbox(item)"
+                                                class="snap-start shrink-0 w-[260px] sm:w-[320px] aspect-video relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/40 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md"
+                                            >
+                                                <img
+                                                    v-if="getThumbnail(item)"
+                                                    :src="getThumbnail(item)"
+                                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                    alt="YouTube"
+                                                />
+                                                <div v-else class="w-full h-full bg-gradient-to-tr from-slate-900 to-red-950/30 flex items-center justify-center">
+                                                    <svg class="h-10 w-10 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 00-2.1 2.1C0 8 0 12 0 12s0 4 .5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 16 24 12 24 12s0-4-.5-5.8zm-14 9.4V8.4l6.3 3.6-6.3 3.6z"/></svg>
+                                                </div>
+                                                <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
+                                                    <div :class="['w-10 h-10 rounded-full bg-gradient-to-r flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
+                                                        <svg class="h-5 w-5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                                    </div>
+                                                </div>
+                                                <div class="absolute top-2 right-2 bg-red-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">YT</div>
+                                                <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
+                                                    <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Video' }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                        <p class="text-xs text-slate-400">Sin videos de YouTube agregados aún.</p>
+                                        <p class="text-[11px] text-slate-500 mt-1">Vincula videos en tu panel de medios para exhibirlos aquí.</p>
+                                    </div>
+                                </template>
+
+                                <!-- CARD 5: PHOTOS -->
+                                <template v-else-if="card.id === 'photos'">
+                                    <div class="flex items-center justify-between mb-5">
+                                        <div class="flex items-center gap-3">
+                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                                Galería Fotográfica
+                                            </h3>
+                                        </div>
+                                        <span v-if="photos.length > 0" class="text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
+                                            {{ photos.length }} fotos
+                                        </span>
+                                    </div>
+
+                                    <div v-if="photos.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                                        <div
+                                            v-for="photo in photos"
+                                            :key="photo.id"
+                                            @click="openLightbox(photo)"
+                                            class="aspect-square relative rounded-2xl overflow-hidden border border-slate-800/80 hover:border-cyan-500/40 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60"
+                                        >
+                                            <img
+                                                :src="getThumbnail(photo)"
+                                                :alt="photo.title || 'Foto de promoción'"
+                                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                loading="lazy"
+                                            />
+                                            <div class="absolute inset-0 bg-slate-950/0 group-hover:bg-slate-950/40 transition-colors flex items-end p-2.5">
+                                                <p v-if="photo.title" class="text-[10px] font-bold text-white truncate w-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {{ photo.title }}
                                                 </p>
                                             </div>
                                         </div>
-
-                                        <!-- Action redirection (Ticket Redirection CTA) -->
-                                        <div class="w-full sm:w-auto flex justify-end shrink-0">
-                                            <a
-                                                :href="getWhatsAppUrl(event.title)"
-                                                target="_blank"
-                                                :class="['bg-slate-900 border border-slate-800 hover:text-white px-4 py-2 rounded-xl text-xs font-black transition-all duration-300 cursor-pointer shadow-md select-none w-full sm:w-auto text-center', tc.event_cta]"
-                                            >
-                                                Adquirir Accesos
-                                            </a>
-                                        </div>
                                     </div>
-                                </div>
+                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                        <p class="text-xs text-slate-400">Sin fotografías en la galería aún.</p>
+                                        <p class="text-[11px] text-slate-500 mt-1">Sube fotos de tus eventos o sesiones en el panel de medios.</p>
+                                    </div>
+                                </template>
                             </div>
-                        </div>
-
-                        <!-- Carousel Indicators (dots) -->
-                        <div v-if="totalEventSlides > 1" class="flex items-center justify-center gap-2 mt-6">
-                            <button
-                                v-for="(slide, index) in totalEventSlides"
-                                :key="`dot-${index}`"
-                                @click="goToEventSlide(index)"
-                                :class="[
-                                    'transition-all duration-300 rounded-full',
-                                    currentEventIndex === index 
-                                        ? 'w-8 h-2 bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]' 
-                                        : 'w-2 h-2 bg-slate-700 hover:bg-slate-600'
-                                ]"
-                                :aria-label="`Ir a eventos ${index + 1}`"
-                            ></button>
-                        </div>
-                    </section>
-                </div>
+                        </section>
+                    </div>
+                </template>
             </div>
-
-            <!-- 3. GALLERY & VIDEOS CAROUSEL SECTION (Full Width, split by layout orientation) -->
-            <section
-                v-if="profile.widget_status?.media !== false && allMedia.length > 0"
-                :class="['bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden group transition-all duration-300 border w-full z-10', tc.widget_card]"
-            >
-                <div class="flex items-center gap-3 mb-8">
-                    <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                    <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">Galería &amp; Videos</h3>
-                </div>
-
-                <!-- Vertical Carousel: TikTok & Instagram (Aspect 9:16) -->
-                <div v-if="verticalMedia.length > 0" class="mb-10 relative">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
-                        <span>📱</span> Reels &amp; TikToks
-                    </h4>
-                    <!-- Fade borders for streaming feel -->
-                    <div class="relative w-full">
-                        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-950/20 to-transparent pointer-events-none z-10"></div>
-                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-950/20 to-transparent pointer-events-none z-10"></div>
-
-                        <div class="flex gap-5 overflow-x-auto py-2 scroll-smooth snap-x snap-mandatory scrollbar-hide">
-                            <div
-                                v-for="item in verticalMedia"
-                                :key="item.id"
-                                @click="openLightbox(item)"
-                                class="snap-start shrink-0 w-[180px] sm:w-[220px] aspect-[9/16] relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/30 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md"
-                            >
-                                <!-- ── INSTAGRAM cover ── -->
-                                <template v-if="getPlatform(item) === 'instagram'">
-                                    <img
-                                        v-if="getThumbnail(item)"
-                                        :src="getThumbnail(item)"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        alt="Instagram Reel"
-                                    />
-                                    <div v-else class="w-full h-full bg-gradient-to-tr from-pink-950/60 via-purple-950/40 to-orange-950/40 flex flex-col items-center justify-center gap-3 p-4">
-                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="none">
-                                            <defs><linearGradient id="ig-grad-new" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#f09433"/><stop offset="25%" stop-color="#e6683c"/><stop offset="50%" stop-color="#dc2743"/><stop offset="75%" stop-color="#cc2366"/><stop offset="100%" stop-color="#bc1888"/></linearGradient></defs>
-                                            <rect width="24" height="24" rx="6" fill="url(#ig-grad-new)"/>
-                                            <path d="M12 8.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.75A2.25 2.25 0 1112 9.75a2.25 2.25 0 010 4.5zM16 8a.75.75 0 100-1.5.75.75 0 000 1.5z" fill="white"/>
-                                            <path fill-rule="evenodd" d="M8 3h8a5 5 0 015 5v8a5 5 0 01-5 5H8a5 5 0 01-5-5V8a5 5 0 015-5zm0 1.5A3.5 3.5 0 004.5 8v8A3.5 3.5 0 008 19.5h8a3.5 3.5 0 003.5-3.5V8A3.5 3.5 0 0016 4.5H8z" fill="white"/>
-                                        </svg>
-                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Reel de Instagram' }}</p>
-                                    </div>
-                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
-                                        <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-pink-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <div class="absolute top-2 right-2 bg-pink-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">IG</div>
-                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
-                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Reel de Instagram' }}</p>
-                                    </div>
-                                </template>
-
-                                <!-- ── TIKTOK cover ── -->
-                                <template v-else-if="getPlatform(item) === 'tiktok'">
-                                    <img
-                                        v-if="getThumbnail(item)"
-                                        :src="getThumbnail(item)"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        alt="TikTok Video"
-                                    />
-                                    <div v-else class="w-full h-full bg-gradient-to-b from-slate-950 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
-                                        <svg class="h-10 w-10" viewBox="0 0 24 24" fill="currentColor">
-                                            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-1.02-.1z" class="fill-[#69C9D0]"/>
-                                            <path d="M15.82 2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.19 8.19 0 004.79 1.54V6.79a4.85 4.85 0 01-3.79-4.79z" class="fill-[#EE1D52]"/>
-                                        </svg>
-                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de TikTok' }}</p>
-                                    </div>
-                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
-                                        <div class="w-10 h-10 rounded-full bg-slate-800 border border-[#EE1D52]/50 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <div class="absolute top-2 right-2 bg-slate-900/90 text-[#EE1D52] border border-[#EE1D52]/50 text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">TT</div>
-                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
-                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Video de TikTok' }}</p>
-                                    </div>
-                                </template>
-
-                                <!-- ── FACEBOOK cover ── -->
-                                <template v-else-if="getPlatform(item) === 'facebook'">
-                                    <img
-                                        v-if="getThumbnail(item)"
-                                        :src="getThumbnail(item)"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        alt="Facebook Video"
-                                    />
-                                    <div v-else class="w-full h-full bg-gradient-to-tr from-blue-950/60 to-slate-900 flex flex-col items-center justify-center gap-3 p-4">
-                                        <svg class="h-10 w-10 text-[#1877F2]" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                                        <p class="text-[9px] text-slate-300 font-semibold text-center truncate w-full">{{ item.title || 'Video de Facebook' }}</p>
-                                    </div>
-                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
-                                        <div class="w-10 h-10 rounded-full bg-[#1877F2]/80 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300">
-                                            <svg class="h-5 w-5 fill-white translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <div class="absolute top-2 right-2 bg-[#1877F2]/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">FB</div>
-                                    <div v-if="getThumbnail(item)" class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
-                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title || 'Video de Facebook' }}</p>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Horizontal Carousel: YouTube & Photos (Aspect 16:9) -->
-                <div v-if="horizontalMedia.length > 0" class="relative">
-                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
-                        <span>🎬</span> Videos &amp; Galería
-                    </h4>
-                    <!-- Fade borders for streaming feel -->
-                    <div class="relative w-full">
-                        <div class="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-slate-950/20 to-transparent pointer-events-none z-10"></div>
-                        <div class="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-slate-950/20 to-transparent pointer-events-none z-10"></div>
-
-                        <div class="flex gap-5 overflow-x-auto py-2 scroll-smooth snap-x snap-mandatory scrollbar-hide">
-                            <div
-                                v-for="item in horizontalMedia"
-                                :key="item.id"
-                                @click="openLightbox(item)"
-                                class="snap-start shrink-0 w-[260px] sm:w-[320px] aspect-video relative rounded-2xl overflow-hidden border border-slate-700/30 hover:border-cyan-500/30 transition-all duration-300 shadow-md group cursor-pointer bg-slate-900/60 backdrop-blur-md"
-                            >
-                                <!-- ── PHOTO ── -->
-                                <template v-if="getPlatform(item) === 'photo'">
-                                    <img
-                                        :src="getThumbnail(item)"
-                                        :alt="item.title"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                    />
-                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                        <p class="text-[9px] font-bold text-white truncate text-center">{{ item.title }}</p>
-                                    </div>
-                                </template>
-
-                                <!-- ── YOUTUBE thumbnail ── -->
-                                <template v-else-if="getPlatform(item) === 'youtube'">
-                                    <img
-                                        v-if="getThumbnail(item)"
-                                        :src="getThumbnail(item)"
-                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        alt="YouTube"
-                                    />
-                                    <div v-else class="w-full h-full bg-gradient-to-tr from-slate-900 to-red-950/30 flex items-center justify-center">
-                                        <svg class="h-10 w-10 text-red-500" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 00-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6a3 3 0 00-2.1 2.1C0 8 0 12 0 12s0 4 .5 5.8a3 3 0 002.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 002.1-2.1C24 16 24 12 24 12s0-4-.5-5.8zm-14 9.4V8.4l6.3 3.6-6.3 3.6z"/></svg>
-                                    </div>
-                                    <!-- Play overlay -->
-                                    <div class="absolute inset-0 bg-slate-950/30 group-hover:bg-slate-950/10 transition-colors flex items-center justify-center">
-                                        <div :class="['w-10 h-10 rounded-full bg-gradient-to-r flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300', tc.play_circle, tc.play_circle_shadow]">
-                                            <svg class="h-5 w-5 fill-slate-950 translate-x-0.5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        </div>
-                                    </div>
-                                    <!-- Platform badge -->
-                                    <div class="absolute top-2 right-2 bg-red-600/90 text-white text-[8px] font-black uppercase px-1.5 py-0.5 rounded-md tracking-wider">YT</div>
-                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/90 to-transparent p-2">
-                                        <p class="text-[9px] font-bold text-white truncate">{{ item.title }}</p>
-                                    </div>
-                                </template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
         <!-- ─── LIGHTBOX MODAL ──────────────────────────────────────────────────── -->
         <Teleport to="body">

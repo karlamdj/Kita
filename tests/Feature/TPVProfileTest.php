@@ -233,5 +233,45 @@ class TPVProfileTest extends TestCase
                 });
         });
     }
+
+    public function test_tpv_card_layout_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $profile = $user->profiles()->create([
+            'name' => 'Layout Artist',
+            'slug' => 'layout-artist',
+            'widget_status' => [
+                'agenda' => true,
+                'media' => true,
+                'spotify' => 'https://open.spotify.com/artist/test',
+            ],
+            'theme' => 'kita-neon',
+        ]);
+
+        $customLayout = [
+            ['id' => 'calendar', 'width' => 'full', 'enabled' => true],
+            ['id' => 'music', 'width' => '1/2', 'enabled' => true],
+            ['id' => 'social_videos', 'width' => '1/2', 'enabled' => true],
+            ['id' => 'youtube_videos', 'width' => '2/3', 'enabled' => true],
+            ['id' => 'photos', 'width' => '1/3', 'enabled' => false],
+        ];
+
+        $response = $this
+            ->actingAs($user)
+            ->patch('/dashboard/tpv/layout', [
+                'layout' => $customLayout,
+            ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect();
+
+        $profile->refresh();
+
+        $this->assertIsArray($profile->widget_status);
+        $this->assertArrayHasKey('layout', $profile->widget_status);
+        $this->assertEquals($customLayout, $profile->widget_status['layout']);
+    }
 }
+
 

@@ -762,13 +762,22 @@ const redirectToTpv = () => {
 
                             <!-- Spotify Link -->
                             <div>
-                                <label class="text-xs font-semibold text-slate-400 block mb-1">Enlace de Spotify</label>
+                                <div class="flex items-center justify-between mb-1">
+                                    <label class="text-xs font-semibold text-slate-400">Enlace de Spotify</label>
+                                    <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                        Reproductor Real
+                                    </span>
+                                </div>
                                 <input
                                     v-model="form.widget_status.spotify"
                                     type="url"
-                                    placeholder="https://open.spotify.com/artist/..."
+                                    placeholder="https://open.spotify.com/track/... o artist/..."
                                     :class="['w-full bg-slate-950 border border-slate-850 rounded-lg py-2.5 px-3 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:ring-1 transition-all duration-350', qrTheme.focusRing]"
                                 />
+                                <p class="text-[11px] text-slate-500 mt-1">
+                                    Pega el enlace de una canción, álbum o tu perfil de artista para reproducir tu música directamente en tu TPV.
+                                </p>
                             </div>
 
                             <!-- Facebook Link -->
@@ -793,6 +802,32 @@ const redirectToTpv = () => {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Bento Grid Layout Customizer CTA -->
+                    <div class="bg-gradient-to-r from-slate-900 via-slate-900/90 to-cyan-950/40 border border-slate-800 hover:border-cyan-500/40 rounded-2xl p-6 shadow-xl transition-all duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                        <div class="flex items-start gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-2xl shrink-0 shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                                🎨
+                            </div>
+                            <div>
+                                <h3 class="text-base font-extrabold text-white flex items-center gap-2">
+                                    Distribución y Tarjetas de la TPV
+                                    <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                                        Bento Grid
+                                    </span>
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-1">
+                                    Organiza tus 5 tarjetas: Reproductor Spotify, Calendario, Reels/TikToks, Videos de YouTube y Galería de Fotos. Puedes reordenarlas y cambiar su ancho (1/3, 1/2, 2/3 o Full).
+                                </p>
+                            </div>
+                        </div>
+                        <a
+                            :href="`/dashboard/tpv?customize=1`"
+                            class="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs shadow-[0_0_20px_rgba(6,182,212,0.35)] transition-all hover:scale-105 flex items-center justify-center gap-2 shrink-0 select-none text-center"
+                        >
+                            <span>✨ Organizar Tarjetas en Vivo</span>
+                        </a>
                     </div>
 
                     <!-- 4. Widgets Visibility Toggles -->
