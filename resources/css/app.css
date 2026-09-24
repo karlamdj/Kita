@@ -176,11 +176,10 @@ html.light h6 {
     color: #0f172a !important;
 }
 
-/* Section titles with cyan accents */
+/* Section titles in Light Mode */
 html.light h1.text-white,
-html.light h2.text-white,
-html.light h3.text-white {
-    color: #0284c7 !important;
+html.light h2.text-white {
+    color: #0f172a !important;
 }
 
 /* Text Colors in Light Mode */
@@ -218,6 +217,7 @@ html.light .bg-\[\#0d1527\]\/50,
 html.light .bg-slate-950\/40,
 html.light .bg-slate-950\/50,
 html.light .bg-slate-950\/60,
+html.light .bg-slate-950\/80,
 html.light article,
 html.light .bg-\[\#0d1527\] {
     background-color: #ffffff !important;
@@ -407,4 +407,130 @@ html.light header button.bg-slate-950\/60 span {
 
 html.light header button.bg-slate-950\/60:hover {
     border-color: #0891b2 !important;
+}
+/* ====================================================
+ * TPV PROFILE VIEW LIGHT MODE (ESTRUCTURA GENERAL)
+ * Los colores de acento se heredan dinámicamente de cada
+ * tema (kita-neon, electric-red, volt-orange, cyber-purple).
+ * ==================================================== */
+
+/* Nombre del artista: blanco con sombra sobre foto en móvil y en Dark Mode. En desktop o sin foto en Modo Claro: oscuro (#0f172a) para máximo contraste */
+.tpv-profile-name-first {
+    color: #ffffff;
+}
+html.light .tpv-profile-name-first {
+    color: #0f172a !important;
+}
+html.light .tpv-has-mobile-hero .tpv-profile-name-first {
+    color: #ffffff !important;
+}
+@media (min-width: 1024px) {
+    html.light .tpv-profile-name-first,
+    html.light .tpv-has-mobile-hero .tpv-profile-name-first {
+        color: #0f172a !important;
+    }
+}
+html.light .tpv-bio,
+html.light .tpv-bio p {
+    color: #475569 !important;
+}
+
+/* Botones de acción del propietario */
+html.light .tpv-btn-customize {
+    background-color: #f0f9ff !important;
+    border-color: #bae6fd !important;
+    color: #0284c7 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+html.light .tpv-btn-customize:hover {
+    background-color: #e0f2fe !important;
+    border-color: #7dd3fc !important;
+}
+html.light .tpv-btn-edit {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+html.light .tpv-btn-edit:hover {
+    background-color: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+
+/* Iconos de redes sociales */
+html.light .tpv-social-icon {
+    background-color: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+html.light .tpv-social-icon:hover {
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    background-color: #f8fafc !important;
+}
+
+/* Portada Placeholder (Silueta neutral en modo claro) */
+html.light .tpv-placeholder-card {
+    background: linear-gradient(180deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 20px 40px -15px rgba(100, 116, 139, 0.25) !important;
+}
+html.light .tpv-light-silhouette {
+    display: flex !important;
+}
+html.light .tpv-dark-placeholder-content {
+    display: none !important;
+}
+
+/* Paneles de Tarjetas Bento */
+html.light .tpv-card {
+    background-color: rgba(255, 255, 255, 0.88) !important;
+    border-color: rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
+}
+html.light .tpv-card:hover {
+    border-color: rgba(203, 213, 225, 0.9) !important;
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.07), 0 6px 10px -2px rgba(0, 0, 0, 0.03) !important;
+}
+
+/* Insignias de encabezados */
+html.light .tpv-badge-spotify {
+    background-color: #ecfdf5 !important;
+    border-color: #a7f3d0 !important;
+    color: #047857 !important;
+    box-shadow: none !important;
+}
+html.light .tpv-badge-spotify span {
+    background-color: #10b981 !important;
+}
+html.light .tpv-badge-count {
+    background-color: #f0f9ff !important;
+    border-color: #bae6fd !important;
+    color: #0284c7 !important;
+}
+
+/* Caja vacía de fallback */
+html.light .tpv-empty-box {
+    background-color: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+}
+html.light .tpv-empty-box p {
+    color: #64748b !important;
+}
+
+/* Lightbox modal cinema styling (siempre oscuro) */
+html.light [class*="bg-black/92"] .bg-slate-950,
+html.light [class*="bg-black/92"] .bg-slate-900,
+html.light [class*="bg-black/92"] .bg-slate-900\/90 {
+    background-color: #020617 !important;
+    border-color: #1e293b !important;
+    color: #f8fafc !important;
+    box-shadow: none !important;
+}
+html.light [class*="bg-black/92"] p.text-white,
+html.light [class*="bg-black/92"] span {
+    color: #f8fafc !important;
+}
+html.light [class*="bg-black/92"] .text-slate-400 {
+    color: #94a3b8 !important;
 }

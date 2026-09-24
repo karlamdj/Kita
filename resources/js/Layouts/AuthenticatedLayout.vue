@@ -20,7 +20,7 @@ provide('setThemeOverride', (theme) => {
 </script>
 
 <template>
-    <div :class="[profileThemeClass, 'bg-slate-950 text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative']">
+    <div :class="[profileThemeClass, 'bg-slate-50/50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans antialiased overflow-x-hidden relative transition-colors duration-300']">
         
         <!-- Glowing Top Border Decorator -->
         <div class="h-[2px] w-full bg-gradient-to-r from-cyan-500 via-blue-500 to-cyan-400 shadow-[0_1px_10px_rgba(var(--color-cyan-500),0.4)] z-[60] sticky top-0"></div>
@@ -35,7 +35,7 @@ provide('setThemeOverride', (theme) => {
         <div class="relative z-10 flex flex-col min-h-[calc(100vh-4rem)]">
             <!-- Page Heading (Glassmorphism layout header) -->
             <header
-                class="bg-slate-900/30 border-b border-slate-900/60 backdrop-blur-sm relative py-6"
+                class="bg-white/80 dark:bg-slate-900/30 border-b border-slate-200/80 dark:border-slate-900/60 backdrop-blur-sm relative py-6"
                 v-if="$slots.header"
             >
                 <!-- Double Neon Line Accents on Header -->

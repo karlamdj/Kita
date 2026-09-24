@@ -15,136 +15,140 @@ const props = defineProps({
 // Using full class strings (not dynamic concatenation) keeps Tailwind's purge safe.
 const THEMES = {
     'kita-neon': {
-        // Hero elements
-        instrument_bg:    'bg-pink-500/10 text-pink-300 border border-pink-500/20',
-        zone_bg:          'bg-cyan-500/10 text-cyan-300 border border-cyan-500/20',
-        name_gradient:    'from-cyan-400 to-cyan-200',
+        // Hero elements (adaptive light/dark)
+        instrument_bg:    'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/20',
+        zone_bg:          'bg-cyan-50/80 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-300 border border-cyan-200 dark:border-cyan-500/20',
+        name_gradient:    'from-cyan-500 to-blue-600 dark:from-cyan-400 dark:to-cyan-200',
         // WhatsApp CTA button
-        cta_btn:          'from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.4)] hover:shadow-[0_0_30px_rgba(6,182,212,0.6)]',
+        cta_btn:          'from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-[0_8px_25px_rgba(6,182,212,0.35)]',
         // Social icons
-        social_icon:      'hover:border-cyan-500/30 hover:bg-cyan-500/5',
+        social_icon:      'hover:border-cyan-500/40 hover:bg-cyan-50 dark:hover:bg-cyan-500/5',
         // Section titles
         section_accent:   'bg-cyan-500',
-        section_title:    'text-cyan-400',
+        section_title:    'text-cyan-600 dark:text-cyan-400',
         // Widget card borders
-        widget_card:      'border-cyan-500/10 hover:border-cyan-500/30 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]',
+        widget_card:      'border-slate-200/80 dark:border-cyan-500/10 hover:border-cyan-500/30',
         // Events date badge
-        event_badge:      'from-cyan-600 to-cyan-800',
+        event_badge:      'from-cyan-600 to-blue-700',
         // "Adquirir Accesos" CTA
-        event_cta:        'hover:border-cyan-500/50 hover:bg-cyan-950/20 text-cyan-400',
+        event_cta:        'hover:border-cyan-500/50 hover:bg-cyan-950/20 text-cyan-500 dark:text-cyan-400',
         // Vinyl / player
-        vinyl:            'from-cyan-600 to-cyan-800',
+        vinyl:            'from-cyan-600 to-blue-700',
         vinyl_center:     'from-cyan-500 to-cyan-300',
         play_btn:         'from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 shadow-[0_0_20px_rgba(6,182,212,0.45)]',
         progress_bar:     'from-cyan-500 to-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.8)]',
-        spotify_link:     'text-cyan-400 hover:text-cyan-300',
+        spotify_link:     'text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300',
         // Gallery play circle
         play_circle:      'from-cyan-500 to-cyan-400',
         // Lightbox border
         lightbox_border:  'border-cyan-500/20 shadow-[0_0_50px_rgba(6,182,212,0.35)]',
-        // Ambient glows (kept original purple/pink for depth)
-        glow_a:           'bg-purple-900/10',
-        glow_b:           'bg-pink-900/10',
-        stage_a:          'bg-purple-600/10',
-        stage_b:          'bg-pink-600/10',
-        hero_aura:        'from-cyan-500/50 to-blue-600/30',
+        // Ambient glows
+        glow_a:           'bg-cyan-400/20 dark:bg-purple-900/10',
+        glow_b:           'bg-blue-400/20 dark:bg-pink-900/10',
+        stage_a:          'bg-cyan-500/20 dark:bg-purple-600/10',
+        stage_b:          'bg-blue-500/20 dark:bg-pink-600/10',
+        hero_aura:        'from-cyan-500/30 to-blue-600/20',
         // Custom theme additions
-        edit_btn:         'text-cyan-400 hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.3)]',
+        edit_btn:         'text-cyan-600 dark:text-cyan-400 hover:border-cyan-500/50',
         play_circle_shadow: 'shadow-[0_0_15px_rgba(6,182,212,0.5)]',
         placeholder_avatar: 'from-cyan-500 to-blue-500 shadow-[0_0_35px_rgba(6,182,212,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(6,182,212,0.4)]',
-        photo_mask:       'from-cyan-950 via-slate-950/60 to-transparent',
-        photo_mask_hero:  'from-cyan-950 via-slate-950/50 to-transparent',
+        photo_destello:   'bg-gradient-to-t from-cyan-500 via-cyan-400 to-blue-500',
+        photo_color_shadow: 'from-cyan-500/30 via-cyan-500/10 to-transparent',
+        photo_tint:       'from-cyan-500/15 via-transparent to-blue-500/10',
     },
     'cyber-purple': {
-        instrument_bg:    'bg-pink-500/10 text-pink-300 border border-pink-500/20',
-        zone_bg:          'bg-purple-500/10 text-purple-300 border border-purple-500/20',
-        name_gradient:    'from-purple-400 to-pink-400',
-        cta_btn:          'from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 shadow-[0_0_20px_rgba(168,85,247,0.4)] hover:shadow-[0_0_30px_rgba(236,72,153,0.6)]',
-        social_icon:      'hover:border-purple-500/30 hover:bg-purple-500/5',
+        instrument_bg:    'bg-pink-50 dark:bg-pink-500/10 text-pink-600 dark:text-pink-300 border border-pink-200 dark:border-pink-500/20',
+        zone_bg:          'bg-purple-50/80 dark:bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-200 dark:border-purple-500/20',
+        name_gradient:    'from-purple-600 to-pink-500 dark:from-purple-400 dark:to-pink-400',
+        cta_btn:          'from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-[0_8px_25px_rgba(168,85,247,0.35)]',
+        social_icon:      'hover:border-purple-500/40 hover:bg-purple-50 dark:hover:bg-purple-500/5',
         section_accent:   'bg-purple-500',
-        section_title:    'text-purple-400',
-        widget_card:      'border-purple-500/10 hover:border-purple-500/30 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)]',
+        section_title:    'text-purple-600 dark:text-purple-400',
+        widget_card:      'border-slate-200/80 dark:border-purple-500/10 hover:border-purple-500/30',
         event_badge:      'from-purple-600 to-pink-600',
-        event_cta:        'hover:border-purple-500/50 hover:bg-purple-950/20 text-purple-400',
+        event_cta:        'hover:border-purple-500/50 hover:bg-purple-950/20 text-purple-500 dark:text-purple-400',
         vinyl:            'from-purple-600 to-pink-600',
         vinyl_center:     'from-purple-500 to-pink-500',
         play_btn:         'from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 shadow-[0_0_20px_rgba(168,85,247,0.45)]',
         progress_bar:     'from-purple-500 to-pink-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]',
-        spotify_link:     'text-pink-400 hover:text-pink-300',
+        spotify_link:     'text-pink-600 dark:text-pink-400 hover:text-pink-500 dark:hover:text-pink-300',
         play_circle:      'from-purple-500 to-pink-500',
         lightbox_border:  'border-purple-500/20 shadow-[0_0_50px_rgba(168,85,247,0.35)]',
-        glow_a:           'bg-purple-900/10',
-        glow_b:           'bg-pink-900/10',
-        stage_a:          'bg-purple-600/10',
-        stage_b:          'bg-pink-600/10',
+        glow_a:           'bg-purple-400/20 dark:bg-purple-900/10',
+        glow_b:           'bg-pink-400/20 dark:bg-pink-900/10',
+        stage_a:          'bg-purple-500/20 dark:bg-purple-600/10',
+        stage_b:          'bg-pink-500/20 dark:bg-pink-600/10',
         hero_aura:        'from-purple-600/30 to-pink-500/20',
-        edit_btn:         'text-purple-400 hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.3)]',
+        edit_btn:         'text-purple-600 dark:text-purple-400 hover:border-purple-500/50',
         play_circle_shadow: 'shadow-[0_0_15px_rgba(168,85,247,0.5)]',
         placeholder_avatar: 'from-purple-500 to-pink-500 shadow-[0_0_35px_rgba(168,85,247,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(168,85,247,0.4)]',
-        photo_mask:       'from-purple-950 via-slate-950/60 to-transparent',
-        photo_mask_hero:  'from-purple-950 via-slate-950/50 to-transparent',
+        photo_destello:   'bg-gradient-to-t from-purple-600 via-purple-500 to-pink-500',
+        photo_color_shadow: 'from-purple-600/30 via-purple-500/10 to-transparent',
+        photo_tint:       'from-purple-500/15 via-transparent to-pink-500/10',
     },
     'volt-orange': {
-        instrument_bg:    'bg-orange-500/10 text-orange-300 border border-orange-500/20',
-        zone_bg:          'bg-amber-500/10 text-amber-300 border border-amber-500/20',
-        name_gradient:    'from-orange-400 to-amber-300',
-        cta_btn:          'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(251,191,36,0.6)]',
-        social_icon:      'hover:border-orange-500/30 hover:bg-orange-500/5',
+        instrument_bg:    'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-300 border border-orange-200 dark:border-orange-500/20',
+        zone_bg:          'bg-amber-50/80 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20',
+        name_gradient:    'from-orange-500 to-amber-500 dark:from-orange-400 dark:to-amber-300',
+        cta_btn:          'from-orange-600 to-amber-500 hover:from-orange-500 hover:to-amber-400 text-white shadow-[0_8px_25px_rgba(249,115,22,0.35)]',
+        social_icon:      'hover:border-orange-500/40 hover:bg-orange-50 dark:hover:bg-orange-500/5',
         section_accent:   'bg-orange-500',
-        section_title:    'text-orange-400',
-        widget_card:      'border-orange-500/10 hover:border-orange-500/30 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)]',
+        section_title:    'text-orange-500 dark:text-orange-400',
+        widget_card:      'border-slate-200/80 dark:border-orange-500/10 hover:border-orange-500/30',
         event_badge:      'from-orange-600 to-amber-600',
-        event_cta:        'hover:border-orange-500/50 hover:bg-orange-950/20 text-orange-400',
+        event_cta:        'hover:border-orange-500/50 hover:bg-orange-950/20 text-orange-500 dark:text-orange-400',
         vinyl:            'from-orange-600 to-amber-600',
         vinyl_center:     'from-orange-500 to-amber-400',
         play_btn:         'from-orange-500 to-amber-400 hover:from-orange-400 hover:to-amber-300 shadow-[0_0_20px_rgba(249,115,22,0.45)]',
         progress_bar:     'from-orange-500 to-amber-400 shadow-[0_0_10px_rgba(249,115,22,0.8)]',
-        spotify_link:     'text-orange-400 hover:text-orange-300',
+        spotify_link:     'text-orange-600 dark:text-orange-400 hover:text-orange-500 dark:hover:text-orange-300',
         play_circle:      'from-orange-500 to-amber-400',
         lightbox_border:  'border-orange-500/20 shadow-[0_0_50px_rgba(249,115,22,0.35)]',
-        glow_a:           'bg-orange-900/10',
-        glow_b:           'bg-amber-900/10',
-        stage_a:          'bg-orange-600/10',
-        stage_b:          'bg-amber-600/10',
+        glow_a:           'bg-orange-400/20 dark:bg-orange-900/10',
+        glow_b:           'bg-amber-400/20 dark:bg-amber-900/10',
+        stage_a:          'bg-orange-500/20 dark:bg-orange-600/10',
+        stage_b:          'bg-amber-500/20 dark:bg-amber-600/10',
         hero_aura:        'from-orange-600/30 to-amber-500/20',
-        edit_btn:         'text-orange-400 hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.3)]',
+        edit_btn:         'text-orange-500 dark:text-orange-400 hover:border-orange-500/50',
         play_circle_shadow: 'shadow-[0_0_15px_rgba(249,115,22,0.5)]',
         placeholder_avatar: 'from-orange-500 to-amber-500 shadow-[0_0_35px_rgba(249,115,22,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(249,115,22,0.4)]',
-        photo_mask:       'from-orange-950 via-slate-950/60 to-transparent',
-        photo_mask_hero:  'from-orange-950 via-slate-950/50 to-transparent',
+        photo_destello:   'bg-gradient-to-t from-orange-500 via-orange-400 to-amber-500',
+        photo_color_shadow: 'from-orange-500/30 via-orange-400/10 to-transparent',
+        photo_tint:       'from-orange-500/15 via-transparent to-amber-400/10',
     },
     'electric-red': {
-        instrument_bg:    'bg-red-500/10 text-red-300 border border-red-500/20',
-        zone_bg:          'bg-red-500/10 text-red-400 border border-red-500/20',
+        instrument_bg:    'bg-rose-50 dark:bg-red-500/10 text-rose-600 dark:text-red-300 border border-rose-200 dark:border-red-500/20',
+        zone_bg:          'bg-rose-50/60 dark:bg-red-500/10 text-rose-600 dark:text-red-400 border border-rose-200 dark:border-red-500/20',
         name_gradient:    'from-red-500 to-orange-500',
-        cta_btn:          'from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.5)]',
-        social_icon:      'hover:border-red-500/30 hover:bg-red-500/5',
+        cta_btn:          'from-red-600 to-orange-500 hover:from-red-500 hover:to-orange-400 text-white shadow-[0_8px_25px_rgba(239,68,68,0.35)]',
+        social_icon:      'hover:border-red-500/40 hover:bg-rose-50 dark:hover:bg-red-500/5',
         section_accent:   'bg-red-500',
         section_title:    'text-red-500',
-        widget_card:      'border-red-500/10 hover:border-red-500/30 hover:shadow-[0_0_30px_rgba(239,68,68,0.15)]',
+        widget_card:      'border-slate-200/80 dark:border-red-500/10 hover:border-red-500/30',
         event_badge:      'from-red-600 to-orange-500',
-        event_cta:        'hover:border-red-500/50 hover:bg-red-950/20 text-red-400',
+        event_cta:        'hover:border-red-500/50 hover:bg-red-950/20 text-red-500 dark:text-red-400',
         vinyl:            'from-red-600 to-orange-600',
         vinyl_center:     'from-red-500 to-orange-500',
         play_btn:         'from-red-500 to-orange-500 hover:from-red-400 hover:to-orange-400 shadow-[0_0_20px_rgba(239,68,68,0.45)]',
         progress_bar:     'from-red-500 to-orange-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]',
-        spotify_link:     'text-red-400 hover:text-red-300',
+        spotify_link:     'text-red-500 dark:text-red-400 hover:text-red-400 dark:hover:text-red-300',
         play_circle:      'from-red-500 to-orange-500',
         lightbox_border:  'border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.35)]',
-        glow_a:           'bg-red-900/10',
-        glow_b:           'bg-orange-900/10',
-        stage_a:          'bg-red-600/10',
-        stage_b:          'bg-orange-600/10',
+        glow_a:           'bg-red-400/20 dark:bg-red-900/10',
+        glow_b:           'bg-orange-400/20 dark:bg-orange-900/10',
+        stage_a:          'bg-red-500/20 dark:bg-red-600/10',
+        stage_b:          'bg-orange-500/20 dark:bg-orange-600/10',
         hero_aura:        'from-red-600/30 to-orange-500/20',
-        edit_btn:         'text-red-400 hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(220,38,38,0.3)]',
+        edit_btn:         'text-red-500 dark:text-red-400 hover:border-red-500/50',
         play_circle_shadow: 'shadow-[0_0_15px_rgba(239,68,68,0.5)]',
         placeholder_avatar: 'from-red-500 to-orange-500 shadow-[0_0_35px_rgba(239,68,68,0.5)]',
         vinyl_shadow:     'shadow-[0_0_20px_rgba(239,68,68,0.4)]',
-        photo_mask:       'from-red-950 via-slate-950/60 to-transparent',
-        photo_mask_hero:  'from-red-950 via-slate-950/50 to-transparent',
+        photo_destello:   'bg-gradient-to-t from-red-600 via-red-500 to-orange-500',
+        photo_color_shadow: 'from-red-600/35 via-red-500/12 to-transparent',
+        photo_tint:       'from-red-500/15 via-transparent to-orange-500/10',
     },
 };
 
@@ -773,7 +777,7 @@ const resetDefaultLayout = () => {
             <button
                 @click="toggleCustomizing"
                 :class="[
-                    'border px-3.5 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center select-none',
+                    'tpv-btn-customize border px-3.5 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center select-none',
                     isCustomizing 
                         ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-extrabold shadow-[0_0_20px_rgba(6,182,212,0.5)]' 
                         : 'bg-slate-900/90 hover:bg-slate-800 border-slate-800 text-cyan-400 hover:border-cyan-500/50'
@@ -784,7 +788,7 @@ const resetDefaultLayout = () => {
             </button>
             <button
                 @click="goToEdit"
-                :class="['bg-slate-900/90 hover:bg-slate-800 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center', tc.edit_btn]"
+                :class="['tpv-btn-edit bg-slate-900/90 hover:bg-slate-800 border border-slate-800 px-4 py-2.5 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all duration-300 hover:scale-105 cursor-pointer shadow-md justify-center', tc.edit_btn]"
             >
                 <span>✏️</span> Editar Perfil
             </button>
@@ -818,93 +822,122 @@ const resetDefaultLayout = () => {
         </div>
 
         <!-- Ambient Decorative Glowing Blobs (theme-driven) -->
-        <div :class="['absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] rounded-full blur-[130px] pointer-events-none z-0', tc.glow_a]"></div>
-        <div :class="['absolute bottom-[10%] right-[-10%] w-[70vw] h-[70vw] rounded-full blur-[140px] pointer-events-none z-0', tc.glow_b]"></div>
+        <div :class="['tpv-glow-left absolute top-[10%] left-[-10%] w-[60vw] h-[60vw] rounded-full blur-[130px] pointer-events-none z-0', tc.glow_a]"></div>
+        <div :class="['tpv-glow-right absolute bottom-[10%] right-[-10%] w-[70vw] h-[70vw] rounded-full blur-[140px] pointer-events-none z-0', tc.glow_b]"></div>
 
         <!-- Stage Lights (theme-driven) -->
-        <div :class="['absolute top-10 right-10 w-[450px] h-[450px] rounded-full blur-[140px] pointer-events-none z-0', tc.stage_a]"></div>
-        <div :class="['absolute bottom-20 left-10 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none z-0', tc.stage_b]"></div>
+        <div :class="['tpv-stage-a absolute top-10 right-10 w-[450px] h-[450px] rounded-full blur-[140px] pointer-events-none z-0', tc.stage_a]"></div>
+        <div :class="['tpv-stage-b absolute bottom-20 left-10 w-[500px] h-[500px] rounded-full blur-[140px] pointer-events-none z-0', tc.stage_b]"></div>
 
         <!-- Mobile Profile Photo Hero (Visible only on Mobile) -->
-        <div v-if="mainPhoto" class="lg:hidden w-full h-[55vh] relative overflow-hidden z-0">
+        <div v-if="mainPhoto" class="lg:hidden w-full h-[38vh] sm:h-[46vh] relative overflow-hidden z-0 bg-slate-100 dark:bg-slate-950 transition-colors duration-500">
             <img
                 :src="mainPhoto"
                 :alt="profile.name"
                 class="w-full h-full object-cover object-center"
             />
-            <!-- Dark integration gradient overlay matching the selected TPV theme -->
-            <div :class="['absolute inset-0 bg-gradient-to-t transition-colors duration-500', tc.photo_mask_hero]"></div>
+
+            <!-- Destello de color atmosférico del tema (tenue y difuminado para proteger legibilidad) -->
+            <div :class="['tpv-photo-destello-mobile absolute -bottom-4 inset-x-0 h-36 sm:h-44 rounded-full blur-[70px] pointer-events-none opacity-40 dark:opacity-45 transition-all duration-700 z-10', tc.photo_destello]"></div>
+
+            <!-- Sombra de color temática tenue ascendente -->
+            <div :class="['tpv-photo-color-shadow absolute inset-x-0 bottom-0 h-44 sm:h-52 bg-gradient-to-t pointer-events-none transition-all duration-500 z-10', tc.photo_color_shadow]"></div>
+
+            <!-- Sutil difuminado de integración de borde inferior -->
+            <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-50/70 dark:from-slate-950/70 to-transparent pointer-events-none z-10"></div>
         </div>
 
         <!-- Main Responsive Content Wrapper -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-16 relative z-10 flex flex-col gap-12 lg:gap-16">
+        <div :class="['max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex flex-col gap-6 sm:gap-10 lg:gap-16 pb-12 lg:py-16', mainPhoto ? '-mt-24 sm:-mt-28 lg:mt-0 pt-0 tpv-has-mobile-hero' : 'pt-6 lg:pt-16']">
             
             <!-- 1. HERO SUPERIOR SECTION (Splitted text left / glowing photo cover right) -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center min-h-[50vh] lg:min-h-[75vh]">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-12 items-center min-h-0 lg:min-h-[75vh]">
                 
                 <!-- HERO LEFT: Floating Name, bio & contact links (No box, no borders) -->
-                <div class="lg:col-span-7 flex flex-col gap-6 justify-center">
-                    
-                    <!-- Instruments & Multi-zones Tags -->
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span
-                            v-for="inst in profile.instruments"
-                            :key="inst"
-                            :class="['px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm', tc.instrument_bg]"
-                        >
-                            {{ inst }}
-                        </span>
+                <div class="lg:col-span-7 flex flex-col gap-3.5 sm:gap-5 lg:gap-6 justify-center">
 
-                        <!-- Genres / Music Styles Tags -->
-                        <template v-if="profile.genres && profile.genres.length > 0">
-                            <span
-                                v-for="genre in profile.genres"
-                                :key="genre"
-                                :class="['px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
-                            >
-                                🎸 {{ genre }}
-                            </span>
-                        </template>
-                        
-                        <template v-if="Array.isArray(profile.coverage_area)">
-                            <span
-                                v-for="zone in profile.coverage_area"
-                                :key="zone"
-                                :class="['px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
-                            >
-                                📍 {{ zone }}
-                            </span>
-                        </template>
-                        <span
-                            v-else-if="profile.coverage_area"
-                            :class="['px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
-                        >
-                            📍 {{ profile.coverage_area }}
-                        </span>
-                    </div>
-
-                    <!-- Giant typography Name Hierarchy -->
+                    <!-- 1. NOMBRE -->
                     <div class="flex flex-col leading-none">
-                        <h1 class="text-white font-black text-6xl sm:text-7xl lg:text-8xl tracking-wider uppercase leading-none">
+                        <h1 class="tpv-profile-name-first text-white font-black text-5xl sm:text-7xl lg:text-8xl tracking-wider uppercase leading-none drop-shadow-[0_4px_16px_rgba(0,0,0,0.65)]">
                             {{ nameParts.first }}
                         </h1>
-                        <span v-if="nameParts.rest" :class="['bg-gradient-to-r text-transparent bg-clip-text text-6xl sm:text-7xl lg:text-8xl font-black uppercase leading-none mt-2', tc.name_gradient]">
+                        <span v-if="nameParts.rest" :class="['tpv-profile-name-rest bg-gradient-to-r text-transparent bg-clip-text text-5xl sm:text-7xl lg:text-8xl font-black uppercase leading-none mt-1 sm:mt-2 drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]', tc.name_gradient]">
                             {{ nameParts.rest }}
                         </span>
                     </div>
 
-                    <!-- Biography Professional bio (No background box) -->
-                    <div v-if="profile.bio" class="text-slate-300 text-base md:text-lg leading-relaxed max-w-2xl mt-2">
+                    <!-- 2. TIPO DE MÚSICO, 3. INSTRUMENTO, 4. REGIÓN (Orden descendente en móvil) -->
+                    <div class="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 sm:gap-3">
+                        <!-- Tipo de Músico (Géneros / Estilos) -->
+                        <div v-if="(Array.isArray(profile.genres) && profile.genres.length > 0) || (profile.genres && !Array.isArray(profile.genres))" class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <template v-if="Array.isArray(profile.genres)">
+                                <span
+                                    v-for="genre in profile.genres"
+                                    :key="genre"
+                                    :class="['tpv-tag-genre px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
+                                >
+                                    🎸 {{ genre }}
+                                </span>
+                            </template>
+                            <span
+                                v-else
+                                :class="['tpv-tag-genre px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
+                            >
+                                🎸 {{ profile.genres }}
+                            </span>
+                        </div>
+
+                        <!-- Instrumento -->
+                        <div v-if="(Array.isArray(profile.instruments) && profile.instruments.length > 0) || (profile.instruments && !Array.isArray(profile.instruments))" class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <template v-if="Array.isArray(profile.instruments)">
+                                <span
+                                    v-for="inst in profile.instruments"
+                                    :key="inst"
+                                    :class="['tpv-tag-instrument px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm', tc.instrument_bg]"
+                                >
+                                    {{ inst }}
+                                </span>
+                            </template>
+                            <span
+                                v-else
+                                :class="['tpv-tag-instrument px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm', tc.instrument_bg]"
+                            >
+                                {{ profile.instruments }}
+                            </span>
+                        </div>
+
+                        <!-- Región -->
+                        <div v-if="(Array.isArray(profile.coverage_area) && profile.coverage_area.length > 0) || (profile.coverage_area && !Array.isArray(profile.coverage_area))" class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <template v-if="Array.isArray(profile.coverage_area)">
+                                <span
+                                    v-for="zone in profile.coverage_area"
+                                    :key="zone"
+                                    :class="['tpv-tag-zone px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
+                                >
+                                    📍 {{ zone }}
+                                </span>
+                            </template>
+                            <span
+                                v-else
+                                :class="['tpv-tag-zone px-3 py-1 rounded-full text-xs font-semibold shadow-sm', tc.zone_bg]"
+                            >
+                                📍 {{ profile.coverage_area }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 5. DESCRIPCIÓN (Bio) -->
+                    <div v-if="profile.bio" class="tpv-bio text-slate-300 text-base md:text-lg leading-relaxed max-w-2xl mt-0.5 sm:mt-1">
                         <p class="whitespace-pre-line font-medium">{{ profile.bio }}</p>
                     </div>
 
                     <!-- Contact & Aligned Socials block (Stacked vertically) -->
-                    <div class="flex flex-col items-start gap-4 mt-4">
-                        <!-- WhatsApp button with pink glowing shadow -->
+                    <div class="flex flex-col items-start gap-3 sm:gap-4 mt-2 sm:mt-4">
+                        <!-- WhatsApp button with glowing shadow -->
                         <a
                             :href="getWhatsAppUrl()"
                             target="_blank"
-                            :class="['w-full sm:w-auto bg-gradient-to-r text-white font-extrabold py-4 px-8 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-300 hover:scale-[1.03] cursor-pointer text-sm tracking-wider uppercase', tc.cta_btn]"
+                            :class="['tpv-whatsapp-btn w-full sm:w-auto bg-gradient-to-r text-white font-extrabold py-3.5 px-6 sm:py-4 sm:px-8 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-300 hover:scale-[1.03] cursor-pointer text-sm tracking-wider uppercase', tc.cta_btn]"
                         >
                             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.73-1.45L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.963C16.588 2.001 14.156.98 11.602.98c-5.439 0-9.867 4.37-9.871 9.803-.001 1.73.461 3.42 1.336 4.908l-.994 3.633 3.734-.972zm12.355-6.852c-.3-.15-1.77-.875-2.046-.975-.276-.1-.477-.15-.677.15-.2.3-.777.975-.951 1.174-.174.2-.35.225-.65.075-.3-.15-1.263-.465-2.403-1.485-.888-.795-1.487-1.777-1.663-2.074-.176-.3-.019-.461.13-.611.135-.135.3-.35.45-.525.15-.175.2-.3.3-.5s.05-.375-.025-.525-.675-1.625-.925-2.225c-.244-.589-.491-.51-.677-.52l-.576-.007c-.2 0-.525.075-.8.375-.275.3-1.05 1.025-1.05 2.5s1.075 2.9 1.225 3.1c.15.2 2.11 3.224 5.112 4.525.714.309 1.272.494 1.707.632.715.227 1.365.195 1.88.117.574-.088 1.77-.725 2.02-.1425.25-.7.25-1.3.175-1.425-.076-.125-.276-.2-.576-.35z"/>
@@ -913,13 +946,13 @@ const resetDefaultLayout = () => {
                         </a>
 
                         <!-- Social Networks outline icons aligned below -->
-                        <div v-if="profile.widget_status?.instagram || profile.widget_status?.spotify || profile.widget_status?.facebook || profile.widget_status?.youtube" class="flex items-center gap-4 pt-1 pb-2">
+                        <div v-if="profile.widget_status?.instagram || profile.widget_status?.spotify || profile.widget_status?.facebook || profile.widget_status?.youtube" class="flex items-center gap-3 sm:gap-4 pt-1 pb-1 sm:pb-2">
                             <!-- Instagram icon -->
                             <a
                                 v-if="profile.widget_status?.instagram"
                                 :href="profile.widget_status.instagram"
                                 target="_blank"
-                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
+                                :class="['tpv-social-icon text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="Instagram"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -932,7 +965,7 @@ const resetDefaultLayout = () => {
                                 v-if="profile.widget_status?.spotify"
                                 :href="profile.widget_status.spotify"
                                 target="_blank"
-                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
+                                :class="['tpv-social-icon text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="Spotify"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -945,7 +978,7 @@ const resetDefaultLayout = () => {
                                 v-if="profile.widget_status?.facebook"
                                 :href="profile.widget_status.facebook"
                                 target="_blank"
-                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
+                                :class="['tpv-social-icon text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="Facebook"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -958,7 +991,7 @@ const resetDefaultLayout = () => {
                                 v-if="profile.widget_status?.youtube"
                                 :href="profile.widget_status.youtube"
                                 target="_blank"
-                                :class="['text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
+                                :class="['tpv-social-icon text-slate-400 hover:text-white transition-colors duration-300 p-2 border border-slate-800 rounded-xl bg-slate-900/20', tc.social_icon]"
                                 title="YouTube"
                             >
                                 <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -973,7 +1006,7 @@ const resetDefaultLayout = () => {
                 <div class="hidden lg:block lg:col-span-5 relative w-full h-[70vh] lg:h-[80vh] select-none flex items-center justify-center">
                     
                     <!-- Neon Concert backstage lighting aura -->
-                    <div :class="['absolute -inset-12 bg-gradient-to-tr blur-[130px] pointer-events-none z-0', tc.hero_aura]"></div>
+                    <div :class="['tpv-hero-aura absolute -inset-12 bg-gradient-to-tr blur-[130px] pointer-events-none z-0', tc.hero_aura]"></div>
 
                     <!-- Frameless image container with mask gradient -->
                     <div :class="['relative z-10 w-full h-full rounded-[36px] overflow-hidden bg-[#0d1527]/40 backdrop-blur-md border transition-all duration-300', tc.widget_card]">
@@ -984,17 +1017,32 @@ const resetDefaultLayout = () => {
                                 class="w-full h-full object-cover object-center rounded-[36px]"
                             />
                             
-                            <!-- Master 3D bottom gradient mask: blends perfectly according to the selected TPV theme -->
-                            <div :class="['absolute inset-0 bg-gradient-to-t pointer-events-none z-10 transition-colors duration-500', tc.photo_mask]"></div>
+                            <!-- Destello de color atmosférico del tema tenue (Desktop) -->
+                            <div :class="['absolute -bottom-4 inset-x-0 h-40 rounded-full blur-[70px] pointer-events-none opacity-40 dark:opacity-45 transition-all duration-700 z-10', tc.photo_destello]"></div>
+                            
+                            <!-- Sombra de color temática tenue ascendente (Desktop) -->
+                            <div :class="['absolute inset-x-0 bottom-0 h-44 bg-gradient-to-t pointer-events-none transition-all duration-500 z-10', tc.photo_color_shadow]"></div>
+
+                            <!-- Sutil difuminado de integración de borde inferior -->
+                            <div class="absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-slate-50/70 dark:from-slate-950/70 to-transparent pointer-events-none z-10"></div>
                         </template>
                         
                         <!-- Placeholder cover if profile has no photos -->
-                        <div v-else class="w-full h-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-8 text-center rounded-[36px]">
-                            <div :class="['w-24 h-24 rounded-full bg-gradient-to-tr flex items-center justify-center text-slate-950 font-black text-4xl mb-4', tc.placeholder_avatar]">
-                                {{ getInitials(profile.name) }}
+                        <div v-else class="tpv-placeholder-card w-full h-full bg-gradient-to-br from-slate-900 via-slate-900 to-slate-950 flex flex-col items-center justify-center p-8 text-center rounded-[36px] relative overflow-hidden select-none">
+                            <!-- Silhouette in Light Mode (identical to reference image) -->
+                            <div class="tpv-light-silhouette absolute inset-0 hidden flex-col items-center justify-end pb-0 pointer-events-none">
+                                <div class="w-32 h-32 rounded-full bg-slate-400/80 mb-2.5 shadow-sm"></div>
+                                <div class="w-64 h-36 rounded-t-[120px] bg-slate-400/80"></div>
                             </div>
-                            <h3 class="text-2xl font-black text-white uppercase tracking-wider">{{ profile.name }}</h3>
-                            <p :class="['text-xs font-semibold mt-1', tc.section_title]">Tarjeta de Presentación Virtual</p>
+
+                            <!-- Dark Mode Default Content -->
+                            <div class="tpv-dark-placeholder-content flex flex-col items-center justify-center w-full h-full">
+                                <div :class="['w-24 h-24 rounded-full bg-gradient-to-tr flex items-center justify-center text-slate-950 font-black text-4xl mb-4', tc.placeholder_avatar]">
+                                    {{ getInitials(profile.name) }}
+                                </div>
+                                <h3 class="text-2xl font-black text-white uppercase tracking-wider">{{ profile.name }}</h3>
+                                <p :class="['text-xs font-semibold mt-1', tc.section_title]">Tarjeta de Presentación Virtual</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1002,7 +1050,7 @@ const resetDefaultLayout = () => {
             </div>
 
             <!-- 2. MODULAR BENTO GRID SECTION (Dynamic reorderable & resizable cards) -->
-            <div class="grid grid-cols-12 gap-6 lg:gap-8 items-start mt-6">
+            <div class="grid grid-cols-12 gap-4 sm:gap-6 lg:gap-8 items-start mt-0 sm:mt-2 lg:mt-6">
                 <template v-for="(card, index) in currentCards" :key="card.id">
                     <div
                         v-if="cardShouldRender(card)"
@@ -1015,7 +1063,7 @@ const resetDefaultLayout = () => {
                         <!-- Card Container with Theme-Driven Styling -->
                         <section
                             :class="[
-                                'bg-[#0d1527]/40 backdrop-blur-md rounded-3xl p-6 sm:p-7 shadow-xl relative overflow-hidden group transition-all duration-300 border flex flex-col justify-between h-full',
+                                'tpv-card bg-[#0d1527]/40 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-7 shadow-xl relative overflow-hidden group transition-all duration-300 border flex flex-col justify-between h-full',
                                 tc.widget_card,
                                 isCustomizing ? 'ring-2 ring-cyan-500/50 shadow-[0_0_30px_rgba(6,182,212,0.2)]' : ''
                             ]"
@@ -1073,12 +1121,12 @@ const resetDefaultLayout = () => {
                                 <template v-if="card.id === 'music'">
                                     <div class="flex items-center justify-between mb-5">
                                         <div class="flex items-center gap-3">
-                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                            <span :class="['tpv-section-accent w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['tpv-section-title text-xs font-black tracking-widest uppercase', tc.section_title]">
                                                 Música Destacada
                                             </h3>
                                         </div>
-                                        <span v-if="spotifyEmbedInfo" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#1DB954]/10 text-[#1DB954] border border-[#1DB954]/20 shadow-[0_0_12px_rgba(29,185,84,0.15)]">
+                                        <span v-if="spotifyEmbedInfo" class="tpv-badge-spotify inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-[#1DB954]/10 text-[#1DB954] border border-[#1DB954]/20 shadow-[0_0_12px_rgba(29,185,84,0.15)]">
                                             <span class="w-1.5 h-1.5 rounded-full bg-[#1DB954] animate-pulse"></span>
                                             Spotify Player
                                         </span>
@@ -1133,7 +1181,7 @@ const resetDefaultLayout = () => {
                                     </div>
 
                                     <!-- Empty state when customizing -->
-                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                    <div v-else class="tpv-empty-box p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
                                         <p class="text-xs text-slate-400">Sin enlace de Spotify configurado aún.</p>
                                         <p class="text-[11px] text-slate-500 mt-1">Configúralo en la edición del perfil para activar el reproductor.</p>
                                     </div>
@@ -1158,8 +1206,8 @@ const resetDefaultLayout = () => {
                                 <template v-else-if="card.id === 'calendar'">
                                     <div class="flex items-center justify-between mb-5">
                                         <div class="flex items-center gap-3">
-                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                            <span :class="['tpv-section-accent w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['tpv-section-title text-xs font-black tracking-widest uppercase', tc.section_title]">
                                                 Próximas Presentaciones
                                             </h3>
                                         </div>
@@ -1258,7 +1306,7 @@ const resetDefaultLayout = () => {
                                             ></button>
                                         </div>
                                     </div>
-                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                    <div v-else class="tpv-empty-box p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
                                         <p class="text-xs text-slate-400">Sin presentaciones programadas actualmente.</p>
                                         <p class="text-[11px] text-slate-500 mt-1">Agrega fechas en tu calendario para mostrarlas aquí.</p>
                                     </div>
@@ -1268,12 +1316,12 @@ const resetDefaultLayout = () => {
                                 <template v-else-if="card.id === 'social_videos'">
                                     <div class="flex items-center justify-between mb-5">
                                         <div class="flex items-center gap-3">
-                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                            <span :class="['tpv-section-accent w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['tpv-section-title text-xs font-black tracking-widest uppercase', tc.section_title]">
                                                 Reels &amp; TikToks
                                             </h3>
                                         </div>
-                                        <span v-if="verticalMedia.length > 0" class="text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
+                                        <span v-if="verticalMedia.length > 0" class="tpv-badge-count text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
                                             {{ verticalMedia.length }} videos
                                         </span>
                                     </div>
@@ -1350,7 +1398,7 @@ const resetDefaultLayout = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                    <div v-else class="tpv-empty-box p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
                                         <p class="text-xs text-slate-400">Sin reels o videos verticales aún.</p>
                                         <p class="text-[11px] text-slate-500 mt-1">Agrega enlaces de TikTok o Instagram en tu panel de medios.</p>
                                     </div>
@@ -1360,12 +1408,12 @@ const resetDefaultLayout = () => {
                                 <template v-else-if="card.id === 'youtube_videos'">
                                     <div class="flex items-center justify-between mb-5">
                                         <div class="flex items-center gap-3">
-                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                            <span :class="['tpv-section-accent w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['tpv-section-title text-xs font-black tracking-widest uppercase', tc.section_title]">
                                                 Videos &amp; En Vivo
                                             </h3>
                                         </div>
-                                        <span v-if="horizontalVideos.length > 0" class="text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
+                                        <span v-if="horizontalVideos.length > 0" class="tpv-badge-count text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
                                             {{ horizontalVideos.length }} videos
                                         </span>
                                     </div>
@@ -1399,7 +1447,7 @@ const resetDefaultLayout = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                    <div v-else class="tpv-empty-box p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
                                         <p class="text-xs text-slate-400">Sin videos de YouTube agregados aún.</p>
                                         <p class="text-[11px] text-slate-500 mt-1">Vincula videos en tu panel de medios para exhibirlos aquí.</p>
                                     </div>
@@ -1409,12 +1457,12 @@ const resetDefaultLayout = () => {
                                 <template v-else-if="card.id === 'photos'">
                                     <div class="flex items-center justify-between mb-5">
                                         <div class="flex items-center gap-3">
-                                            <span :class="['w-8 h-0.5 rounded-full', tc.section_accent]"></span>
-                                            <h3 :class="['text-xs font-black tracking-widest uppercase', tc.section_title]">
+                                            <span :class="['tpv-section-accent w-8 h-0.5 rounded-full', tc.section_accent]"></span>
+                                            <h3 :class="['tpv-section-title text-xs font-black tracking-widest uppercase', tc.section_title]">
                                                 Galería Fotográfica
                                             </h3>
                                         </div>
-                                        <span v-if="photos.length > 0" class="text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
+                                        <span v-if="photos.length > 0" class="tpv-badge-count text-[10px] font-bold text-slate-400 px-2.5 py-0.5 rounded-full bg-slate-900 border border-slate-800">
                                             {{ photos.length }} fotos
                                         </span>
                                     </div>
@@ -1439,7 +1487,7 @@ const resetDefaultLayout = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div v-else class="p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
+                                    <div v-else class="tpv-empty-box p-8 text-center border border-dashed border-slate-800 rounded-2xl bg-slate-950/40">
                                         <p class="text-xs text-slate-400">Sin fotografías en la galería aún.</p>
                                         <p class="text-[11px] text-slate-500 mt-1">Sube fotos de tus eventos o sesiones en el panel de medios.</p>
                                     </div>
